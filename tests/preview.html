@@ -1,35 +1,49 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة اختبار — بيانات وهمية</title><style>html,body{height:100%;margin:0}body{display:flex;flex-direction:column;font:12px system-ui,sans-serif}.test-banner{background:#fff4d8;color:#705b20;text-align:center;padding:7px}iframe{flex:1;width:100%;border:0}body.mobile{background:#eef0eb}body.mobile iframe{flex:none;width:390px;max-width:100%;height:820px;margin:0 auto}</style></head><body><div class="test-banner">معاينة اختبار فقط — أسماء وطلب وهمي واحد. لا تتصل بقاعدة البيانات ولا تحفظ أي تغييرات.</div><iframe id="preview" title="اختبار واجهة الشجرة ببيانات وهمية" sandbox="allow-scripts allow-modals allow-downloads"></iframe><script>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة اختبار — بيانات وهمية</title><style>html,body{height:100%;margin:0}body{display:flex;flex-direction:column;font:12px system-ui,sans-serif}.test-banner{background:#fff4d8;color:#705b20;text-align:center;padding:7px}iframe{flex:1;width:100%;border:0}body.mobile{background:#eef0eb}body.mobile iframe{flex:none;width:390px;max-width:100%;height:820px;margin:0 auto}</style></head><body><div class="test-banner">معاينة اختبار فقط — بيانات وهمية. لا تتصل بقاعدة البيانات ولا تحفظ أي تغييرات حقيقية.</div><iframe id="preview" title="اختبار الواجهة ببيانات وهمية" sandbox="allow-scripts allow-modals allow-downloads"></iframe><script>
 (async()=>{
-  if(new URLSearchParams(location.search).has('mobile'))document.body.classList.add('mobile');
+  const params=new URLSearchParams(location.search),mode=params.has('join')?'join':'admin';
+  if(params.has('mobile'))document.body.classList.add('mobile');
   const html=await (await fetch('../index.html',{cache:'no-store'})).text();
-  const bootstrap=()=>{
-    const data={tree_session:JSON.stringify({access_token:'demo-not-a-real-session'})};
+  const bootstrap=(mode)=>{
+    const data=mode==='join'?{tree_invite:'demo-not-a-real-invite'}:{tree_session:JSON.stringify({access_token:'demo-not-a-real-session'})};
     Object.defineProperty(window,'sessionStorage',{value:{getItem:key=>data[key]??null,setItem:(key,value)=>{data[key]=String(value);},removeItem:key=>{delete data[key];}}});
+    history.replaceState=()=>{};
     const demoPeople=[
       {id:'demo-root',name:'عبدالله تجريبي',parent_id:null},
-      {id:'demo-1',name:'محمد تجريبي',parent_id:'demo-root'},
+      {id:'demo-1',name:'صالح تجريبي',parent_id:'demo-root'},
       {id:'demo-2',name:'أحمد تجريبي',parent_id:'demo-root'},
       {id:'demo-3',name:'خالد تجريبي',parent_id:'demo-root'},
-      {id:'demo-4',name:'فهد تجريبي',parent_id:'demo-1'},
-      {id:'demo-5',name:'سعد تجريبي',parent_id:'demo-1'},
-      {id:'demo-6',name:'ناصر تجريبي',parent_id:'demo-2'},
+      {id:'demo-4',name:'محمد تجريبي',parent_id:'demo-1'},
+      {id:'demo-5',name:'فهد تجريبي',parent_id:'demo-1'},
+      {id:'demo-6',name:'محمد تجريبي',parent_id:'demo-2'},
       {id:'demo-7',name:'علي تجريبي',parent_id:'demo-3'},
       {id:'demo-8',name:'يوسف تجريبي',parent_id:'demo-3'}
     ].map((p,i)=>({...p,gender:'male',sort_order:i}));
-    const demoRequest={id:'demo-request',sender_name:'طلب تجريبي',phone:'بيانات اختبار',selected_parent:'demo-root',context:'',details:'طلب وهمي للتحقق من العداد',proposed_names:['اسم تجريبي'],status:'pending',created_at:'2026-10-28T00:00:00+03:00'};
+    const demoRequests=[{id:'demo-request',sender_name:'مقدم طلب تجريبي للعائلة',phone:'00000000',selected_parent:'demo-4',context:'أبناء محمد بن صالح',details:'خالد\\nفهد',proposed_names:['خالد','فهد'],status:'pending',created_at:'2026-10-28T02:15:00+03:00'}];
+    const token='f'.repeat(64);
+    function receipt(r){return{token,status:r.status,created_at:r.created_at,names:r.proposed_names,parent_name:demoPeople.find(p=>p.id===r.selected_parent)?.name||null};}
     window.fetch=async(url,options={})=>{
-      let result,status=200;
-      const path=String(url);
+      let result,status=200;const path=String(url),body=options.body?JSON.parse(options.body):{};
       if(path.includes('/rpc/my_family_invite'))result='demo-not-a-real-invite';
       else if(path.includes('/rpc/family_get_auto_add'))result=false;
-      else if(path.includes('/family_people?')&&(!options.method||options.method==='GET'))result=demoPeople;
-      else if(path.includes('/family_requests?')&&(!options.method||options.method==='GET'))result=[demoRequest];
-      else{status=403;result={message:'هذه معاينة فقط. الحفظ معطل.'};}
+      else if(path.includes('/rpc/family_review_request')){
+        const request=demoRequests.find(r=>r.id===body.p_request_id&&r.status==='pending');
+        if(!request){status=400;result={message:'request unavailable'};}
+        else{Object.assign(request,{selected_parent:body.p_parent_id,context:body.p_context,proposed_names:body.p_names,details:body.p_names.join('\n'),status:body.p_approve?'approved':'pending'});if(body.p_approve)body.p_names.forEach((name,i)=>demoPeople.push({id:'approved-'+i,name,parent_id:body.p_parent_id,gender:'male',sort_order:20+i}));result={id:request.id,status:request.status};}
+      }
+      else if(path.includes('/rpc/family_submit_request')){
+        const request={id:'demo-submitted',sender_name:body.p_sender,phone:body.p_phone,selected_parent:body.p_parent,context:body.p_context,proposed_names:body.p_names,details:body.p_names.join('\n'),status:'pending',created_at:new Date().toISOString()};demoRequests.push(request);result=receipt(request);
+      }
+      else if(path.includes('/rpc/family_track_request'))result=receipt(demoRequests[demoRequests.length-1]);
+      else if(path.includes('/family_people?')&&(!options.method||options.method==='GET'))result=path.includes('deleted_at=not.is.null')?[]:demoPeople;
+      else if(path.includes('/family_requests?')&&(!options.method||options.method==='GET'))result=demoRequests;
+      else if(path.includes('/family_requests?')&&options.method==='PATCH'){demoRequests[0].status=body.status;result=[demoRequests[0]];}
+      else{status=403;result={message:'هذه معاينة فقط. هذا الإجراء غير متاح.'};}
+      document.documentElement.dataset.demoLastPath=path.split('/rest/v1/')[1]||'auth';document.documentElement.dataset.demoLastPayload=JSON.stringify(body);
       return new Response(JSON.stringify(result),{status,headers:{'Content-Type':'application/json'}});
     };
   };
   const base=new URL('../',location.href).href;
-  const patched=html.replace('<head>','<head><base href="'+base+'">').replace('<script src="app.js"><'+'/script>','<script>('+bootstrap.toString()+')();<'+'/script><script src="app.js"><'+'/script>');
+  const patched=html.replace('<head>','<head><base href="'+base+'">').replace('<script src="app.js"><'+'/script>','<script>('+bootstrap.toString()+')('+JSON.stringify(mode)+');<'+'/script><script src="app.js"><'+'/script>');
   document.querySelector('#preview').srcdoc=patched;
 })();
 </script></body></html>
