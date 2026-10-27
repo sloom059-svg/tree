@@ -21,3 +21,8 @@ test('request dates use Gregorian Saudi dates even across UTC midnight',()=>{
   assert.match(result.date,/٢٨/);assert.match(result.date,/٢٠٢٦/);assert.match(result.time,/١:١٥/);
   assert.deepEqual(U.dateParts('invalid'),{date:'غير متاح',time:''});
 });
+
+test('editable names escape quotes and markup in input attributes',()=>{
+  assert.equal(U.escapeHTML('" onfocus="test <tag> &'), '&quot; onfocus=&quot;test &lt;tag&gt; &amp;');
+  assert.equal(U.phoneDigits('٠٥٠١٢٣٤٥٦٧'), '0501234567');
+});

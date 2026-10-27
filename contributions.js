@@ -1,11 +1,11 @@
 (() => {
   'use strict';
-  const U=window.FamilyRequestUtils;
+  const U=window.FamilyRequestUtils,html=U.escapeHTML;
   let step=1,unknown=false,filter='pending',reviewRequest=null,reviewBusy=false,requestSignature='';
   const statusLabels={pending:'قيد الانتظار',approved:'مقبول',rejected:'مرفوض'};
-  function tags(names){return names.map((name,i)=>`<span class="name-tag"><i>${i+1}</i>${esc(name)}</span>`).join('');}
+  function tags(names){return names.map((name,i)=>`<span class="name-tag"><i>${i+1}</i>${html(name)}</span>`).join('');}
   function family(id){return U.lineage(people.find(p=>p.id===id),people);}
-  function selectionText(id){const f=family(id);return f.person?`<b>الأب: ${esc(f.person.name)}</b><small>الجد (والد الأب): ${esc(f.parent?.name||'غير مسجل في الشجرة')}</small>`:'';}
+  function selectionText(id){const f=family(id);return f.person?`<b>الأب: ${html(f.person.name)}</b><small>الجد (والد الأب): ${html(f.parent?.name||'غير مسجل في الشجرة')}</small>`:'';}
   function setError(id,message){const el=$('#'+id);el.textContent=message;el.classList.toggle('hidden',!message);if(message){el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});}}
   function renderRequests(){
     const selected=document.querySelector('input[name="requestFilter"]:checked');if(selected)filter=selected.value;
@@ -16,7 +16,7 @@
     if(!session||!invitation){$('#requests').innerHTML='';return;}
     $('#requests').innerHTML=shown.length?shown.map(request=>{
       const names=U.namesFromRequest(request),f=family(request.selected_parent),date=U.dateParts(request.created_at);
-      return `<article class="request-card" data-request-card="${esc(request.id)}"><div class="request-card-header"><div><h3>${esc(request.sender_name||'طلب إضافة أسماء')}</h3><p>طلب إضافة ${names.length} من أفراد العائلة</p></div><div><span class="request-source">رابط جمع الأسماء</span><span class="request-status status-${['pending','approved','rejected'].includes(request.status)?request.status:'pending'}">${esc(statusLabels[request.status]||request.status)}</span></div></div><section class="request-detail-section"><h4>تفاصيل الطلب</h4><div class="request-meta-grid"><dl><dt>مقدم الطلب</dt><dd>${esc(request.sender_name||'غير مسجل')}</dd></dl><dl><dt>رقم الجوال</dt><dd>${request.phone?`<a href="tel:${esc((String(request.phone).trim().startsWith('+')?'+':'')+U.phoneDigits(request.phone))}" dir="ltr">${esc(request.phone)}</a>`:'لم يُكتب'}</dd></dl><dl><dt>تاريخ الطلب</dt><dd><time datetime="${esc(request.created_at||'')}">${esc(date.date)}</time><small>${esc(date.time)} · بتوقيت السعودية</small></dd></dl></div></section><section class="request-detail-section"><h4>مكان إضافة الأسماء في الشجرة</h4><div class="request-family-grid"><dl><dt>الأب المختار</dt><dd>${esc(f.person?.name||'بحاجة إلى تحديد')}</dd></dl><dl><dt>الجد (والد الأب)</dt><dd>${esc(f.parent?.name||'غير مسجل')}</dd></dl><dl><dt>جد الأب</dt><dd>${esc(f.grandparent?.name||'غير مسجل')}</dd></dl></div>${request.context?`<p class="request-context"><b>توضيح مقدم الطلب:</b> ${esc(request.context)}</p>`:''}</section><section class="request-detail-section"><h4>الأسماء المطلوب إضافتها <span class="muted">(${names.length})</span></h4><div class="name-tags">${tags(names)}</div></section><div class="request-card-actions">${request.status==='pending'?`<button type="button" class="btn" data-review="${esc(request.id)}">مراجعة الطلب وتعديله</button>`:''}${f.person?`<button type="button" class="tool-btn" data-request-parent="${esc(f.person.id)}">عرض الأب في الشجرة</button>`:''}${request.status==='pending'?`<button type="button" class="reject-request" data-reject="${esc(request.id)}">رفض الطلب</button>`:''}</div></article>`;
+      return `<article class="request-card" data-request-card="${html(request.id)}"><div class="request-card-header"><div><h3>${html(request.sender_name||'طلب إضافة أسماء')}</h3><p>طلب إضافة ${names.length} من أفراد العائلة</p></div><div><span class="request-source">رابط جمع الأسماء</span><span class="request-status status-${['pending','approved','rejected'].includes(request.status)?request.status:'pending'}">${html(statusLabels[request.status]||request.status)}</span></div></div><section class="request-detail-section"><h4>تفاصيل الطلب</h4><div class="request-meta-grid"><dl><dt>مقدم الطلب</dt><dd>${html(request.sender_name||'غير مسجل')}</dd></dl><dl><dt>رقم الجوال</dt><dd>${request.phone?`<a href="tel:${html((String(request.phone).trim().startsWith('+')?'+':'')+U.phoneDigits(request.phone))}" dir="ltr">${html(request.phone)}</a>`:'لم يُكتب'}</dd></dl><dl><dt>تاريخ الطلب</dt><dd><time datetime="${html(request.created_at||'')}">${html(date.date)}</time><small>${html(date.time)} · بتوقيت السعودية</small></dd></dl></div></section><section class="request-detail-section"><h4>مكان إضافة الأسماء في الشجرة</h4><div class="request-family-grid"><dl><dt>الأب المختار</dt><dd>${html(f.person?.name||'بحاجة إلى تحديد')}</dd></dl><dl><dt>الجد (والد الأب)</dt><dd>${html(f.parent?.name||'غير مسجل')}</dd></dl><dl><dt>جد الأب</dt><dd>${html(f.grandparent?.name||'غير مسجل')}</dd></dl></div>${request.context?`<p class="request-context"><b>توضيح مقدم الطلب:</b> ${html(request.context)}</p>`:''}</section><section class="request-detail-section"><h4>الأسماء المطلوب إضافتها <span class="muted">(${names.length})</span></h4><div class="name-tags">${tags(names)}</div></section><div class="request-card-actions">${request.status==='pending'?`<button type="button" class="btn" data-review="${html(request.id)}">مراجعة الطلب وتعديله</button>`:''}${f.person?`<button type="button" class="tool-btn" data-request-parent="${html(f.person.id)}">عرض الأب في الشجرة</button>`:''}${request.status==='pending'?`<button type="button" class="reject-request" data-reject="${html(request.id)}">رفض الطلب</button>`:''}</div></article>`;
     }).join(''):`<div class="request-empty">${filter==='pending'?'لا توجد طلبات بانتظار المراجعة.':filter==='all'?'لا توجد طلبات حتى الآن.':'لا توجد طلبات بهذه الحالة.'}</div>`;
   }
   function renderPicker(kind){
@@ -24,7 +24,7 @@
     const matches=U.findPeople(people,input.value,review?$('#reviewGrandparent').value:'');
     results.innerHTML=matches.slice(0,30).map(person=>{
       const f=family(person.id),chosen=select.value===person.id&&(!unknown||review);
-      return `<button class="parent-result" type="button" data-pick-parent="${esc(person.id)}" data-picker="${kind}" aria-pressed="${chosen}"><span class="parent-radio" aria-hidden="true">${chosen?'✓':''}</span><span><strong>${esc(person.name)}</strong><small><span>والده: ${esc(f.parent?.name||'غير مسجل')}</span><span>جده: ${esc(f.grandparent?.name||'غير مسجل')}</span></small></span></button>`;
+      return `<button class="parent-result" type="button" data-pick-parent="${html(person.id)}" data-picker="${kind}" aria-pressed="${chosen}"><span class="parent-radio" aria-hidden="true">${chosen?'✓':''}</span><span><strong>${html(person.name)}</strong><small><span>والده: ${html(f.parent?.name||'غير مسجل')}</span><span>جده: ${html(f.grandparent?.name||'غير مسجل')}</span></small></span></button>`;
     }).join('')||'<p class="picker-empty">لم نجد اسمًا مطابقًا. جرّب اسم الأب أو والده، أو اختر «لم أجد الأب في الشجرة» في نموذج المشاركة.</p>';
     if(matches.length>30)results.insertAdjacentHTML('beforeend','<p class="picker-more">توجد أسماء أخرى. اكتب الاسم أو اسم والده لتضييق النتائج.</p>');
     const text=selectionText(select.value);selection.innerHTML=text;selection.classList.toggle('hidden',!text||(!review&&unknown));
@@ -32,23 +32,23 @@
   }
   function syncReviewOptions(){
     const prior=$('#reviewParent').value;
-    $('#reviewParent').innerHTML='<option value="">اختر الأب</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(personLabel(p))}</option>`).join('');
+    $('#reviewParent').innerHTML='<option value="">اختر الأب</option>'+people.map(p=>`<option value="${html(p.id)}">${html(personLabel(p))}</option>`).join('');
     $('#reviewParent').value=prior;
     const oldGrand=$('#reviewGrandparent').value;
     const grandparents=people.filter(p=>people.some(child=>child.parent_id===p.id));
-    $('#reviewGrandparent').innerHTML='<option value="">كل الفروع / الأجداد</option>'+grandparents.map(p=>`<option value="${esc(p.id)}">${esc(personLabel(p))}</option>`).join('');
+    $('#reviewGrandparent').innerHTML='<option value="">كل الفروع / الأجداد</option>'+grandparents.map(p=>`<option value="${html(p.id)}">${html(personLabel(p))}</option>`).join('');
     $('#reviewGrandparent').value=grandparents.some(p=>p.id===oldGrand)?oldGrand:'';
   }
   function rowValues(kind){return [...document.querySelectorAll('#'+kind+'NameRows input')].map(input=>input.value);}
   function syncNames(kind){const values=rowValues(kind);$(kind==='join'?'#names':'#reviewNames').value=values.join('\n');if(kind==='review')approvalSummary();return values;}
   function paintRows(kind,values=['']){
-    const root=$('#'+kind+'NameRows');root.innerHTML=values.map((value,i)=>`<div class="name-row"><span class="name-row-number" aria-hidden="true">${i+1}</span><label for="${kind}Name${i}">اسم ${kind==='join'?'الابن':'الفرد'} ${i+1}<input id="${kind}Name${i}" data-name-kind="${kind}" maxlength="100" autocomplete="off" placeholder="${kind==='join'?'اكتب اسم الابن':'الاسم المطلوب إضافته'}" value="${esc(value)}"></label><button type="button" class="remove-name" data-remove-name="${i}" data-name-kind="${kind}" aria-label="حذف خانة الاسم ${i+1}" ${values.length===1?'disabled':''}>×</button></div>`).join('');
+    const root=$('#'+kind+'NameRows');root.innerHTML=values.map((value,i)=>`<div class="name-row"><span class="name-row-number" aria-hidden="true">${i+1}</span><label for="${kind}Name${i}">اسم ${kind==='join'?'الابن':'الفرد'} ${i+1}<input id="${kind}Name${i}" data-name-kind="${kind}" maxlength="100" autocomplete="off" placeholder="${kind==='join'?'اكتب اسم الابن':'الاسم المطلوب إضافته'}" value="${html(value)}"></label><button type="button" class="remove-name" data-remove-name="${i}" data-name-kind="${kind}" aria-label="حذف خانة الاسم ${i+1}" ${values.length===1?'disabled':''}>×</button></div>`).join('');
     $(kind==='join'?'#addJoinName':'#addReviewName').disabled=values.length>=50;syncNames(kind);
   }
   function addName(kind){const values=rowValues(kind);if(values.length>=50)return;values.push('');paintRows(kind,values);$('#'+kind+'Name'+(values.length-1)).focus();}
   function approvalSummary(){
     const parent=family($('#reviewParent').value),count=rowValues('review').filter(x=>x.trim()).length;
-    $('#reviewApprovalSummary').innerHTML=parent.person?`عند الاعتماد ستُضاف <b>${count} أسماء</b> كأبناء لـ <b>${esc(parent.person.name)}</b>${parent.parent?'، والجد هو <b>'+esc(parent.parent.name)+'</b>':''}.`:'اختر الأب الصحيح أولًا. لن تُضاف الأسماء إلى الشجرة عند حفظ التعديلات فقط.';
+    $('#reviewApprovalSummary').innerHTML=parent.person?`عند الاعتماد ستُضاف <b>${count} أسماء</b> كأبناء لـ <b>${html(parent.person.name)}</b>${parent.parent?'، والجد هو <b>'+html(parent.parent.name)+'</b>':''}.`:'اختر الأب الصحيح أولًا. لن تُضاف الأسماء إلى الشجرة عند حفظ التعديلات فقط.';
   }
   function openReview(id){
     const request=requests.find(r=>r.id===id&&r.status==='pending');if(!request){showMessage('هذا الطلب لم يعد بانتظار المراجعة. حدّث الصفحة.');return;}
@@ -83,8 +83,8 @@
   function showStep(next,scroll=true){
     step=next;document.querySelectorAll('.join-step').forEach(el=>el.classList.toggle('hidden',Number(el.dataset.step)!==step));
     document.querySelectorAll('[data-step-indicator]').forEach(el=>{const n=Number(el.dataset.stepIndicator);el.classList.toggle('completed',n<step);if(n===step)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
-    if(step===2)$('#joinChosenParent').innerHTML=unknown?esc(chosenParent()):chosenParent();
-    if(step===3){$('#joinFinalParent').innerHTML=unknown?esc(chosenParent()):chosenParent();$('#joinFinalNames').innerHTML=tags(rowValues('join').map(x=>x.trim()).filter(Boolean));}
+    if(step===2)$('#joinChosenParent').innerHTML=unknown?html(chosenParent()):chosenParent();
+    if(step===3){$('#joinFinalParent').innerHTML=unknown?html(chosenParent()):chosenParent();$('#joinFinalNames').innerHTML=tags(rowValues('join').map(x=>x.trim()).filter(Boolean));}
     setError('joinError','');
     if(scroll){$('#joinBlock').scrollIntoView({behavior:'smooth',block:'start'});const heading=document.querySelector('.join-step:not(.hidden) h2');heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   }
