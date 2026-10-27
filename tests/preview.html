@@ -4,7 +4,7 @@
   if(params.has('mobile'))document.body.classList.add('mobile');
   const html=await (await fetch('../index.html',{cache:'no-store'})).text();
   const bootstrap=(mode)=>{
-    const data=mode==='join'?{tree_invite:'demo-not-a-real-invite'}:{tree_session:JSON.stringify({access_token:'demo-not-a-real-session'})};
+    const data=mode==='join'?{tree_invite:'DEMO_ONLY_123456'}:{tree_session:JSON.stringify({access_token:'demo-not-a-real-session'})};
     Object.defineProperty(window,'sessionStorage',{value:{getItem:key=>data[key]??null,setItem:(key,value)=>{data[key]=String(value);},removeItem:key=>{delete data[key];}}});
     history.replaceState=()=>{};
     const demoPeople=[
@@ -23,7 +23,8 @@
     function receipt(r){return{token,status:r.status,created_at:r.created_at,names:r.proposed_names,parent_name:demoPeople.find(p=>p.id===r.selected_parent)?.name||null};}
     window.fetch=async(url,options={})=>{
       let result,status=200;const path=String(url),body=options.body?JSON.parse(options.body):{};
-      if(path.includes('/rpc/my_family_invite'))result='demo-not-a-real-invite';
+      if(path.includes('/rpc/family_short_invite'))result='DEMO_ONLY_123456';
+      else if(path.includes('/rpc/my_family_invite'))result='DEMO_ONLY_123456';
       else if(path.includes('/rpc/family_get_auto_add'))result=false;
       else if(path.includes('/rpc/family_review_request')){
         const request=demoRequests.find(r=>r.id===body.p_request_id&&r.status==='pending');

@@ -26,3 +26,10 @@ test('editable names escape quotes and markup in input attributes',()=>{
   assert.equal(U.escapeHTML('" onfocus="test <tag> &'), '&quot; onfocus=&quot;test &lt;tag&gt; &amp;');
   assert.equal(U.phoneDigits('٠٥٠١٢٣٤٥٦٧'), '0501234567');
 });
+
+test('shared invitation links use a compact fragment on the canonical domain',()=>{
+  const link=U.inviteLink('ExampleCode12345');
+  assert.equal(link,'https://aljarallah.vercel.app/#i=ExampleCode12345');
+  assert.equal(new URL(link).search,'');
+  assert.equal(U.inviteLink(''),'');
+});
