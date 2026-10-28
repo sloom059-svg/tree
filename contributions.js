@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const U=window.FamilyRequestUtils,html=U.escapeHTML;
-  let step=1,unknown=false,filter='pending',reviewRequest=null,reviewBusy=false,requestSignature='';
+  let step=1,unknown=false,filter='pending',reviewRequest=null,reviewBusy=false,requestSignature='',joinPage=1;
   const statusLabels={pending:'قيد الانتظار',approved:'مقبول',rejected:'مرفوض'};
   function tags(names){return names.map((name,i)=>`<span class="name-tag"><i>${i+1}</i>${html(name)}</span>`).join('');}
   function family(id){return U.lineage(people.find(p=>p.id===id),people);}
@@ -22,11 +22,18 @@
   function renderPicker(kind){
     const review=kind==='review',input=$(review?'#reviewParentSearch':'#joinParentSearch'),results=$(review?'#reviewParentResults':'#joinParentResults'),select=$(review?'#reviewParent':'#ancestor'),selection=$(review?'#reviewParentSelection':'#joinParentSelection');
     const matches=U.findPeople(people,input.value,review?$('#reviewGrandparent').value:'');
-    results.innerHTML=matches.slice(0,30).map(person=>{
+    const pageSize=review?30:20;
+    const pages=Math.max(1,Math.ceil(matches.length/pageSize));
+    if(!review)joinPage=Math.min(joinPage,pages);
+    const currentPage=review?1:joinPage;
+    results.innerHTML=matches.slice((currentPage-1)*pageSize,currentPage*pageSize).map(person=>{
       const f=family(person.id),chosen=select.value===person.id&&(!unknown||review);
       return `<button class="parent-result" type="button" data-pick-parent="${html(person.id)}" data-picker="${kind}" aria-pressed="${chosen}"><span class="parent-radio" aria-hidden="true">${chosen?'✓':''}</span><span><strong>${html(person.name)}</strong><small><span>والده: ${html(f.parent?.name||'غير مسجل')}</span><span>جده: ${html(f.grandparent?.name||'غير مسجل')}</span></small></span></button>`;
     }).join('')||'<p class="picker-empty">لم نجد اسمًا مطابقًا. جرّب اسم الأب أو والده، أو اختر «لم أجد الأب في الشجرة» في نموذج المشاركة.</p>';
-    if(matches.length>30)results.insertAdjacentHTML('beforeend','<p class="picker-more">توجد أسماء أخرى. اكتب الاسم أو اسم والده لتضييق النتائج.</p>');
+    if(!review){
+      const nav=$('#joinParentPages');
+      nav.innerHTML=pages>1?`<button type="button" data-join-page="prev" ${joinPage===1?'disabled':''}>السابق</button><span>صفحة ${joinPage} من ${pages}</span><button type="button" data-join-page="next" ${joinPage===pages?'disabled':''}>التالي</button>`:'';
+    } else if(matches.length>30){results.insertAdjacentHTML('beforeend','<p class="picker-more">توجد أسماء أخرى. اكتب الاسم أو اسم والده لتضييق النتائج.</p>');}
     const text=selectionText(select.value);selection.innerHTML=text;selection.classList.toggle('hidden',!text||(!review&&unknown));
     if(review)approvalSummary();
   }
@@ -111,9 +118,10 @@
       $('#form').reset();resetWizard();showReceipt(result,result.token);
     }catch(error){setError('joinError',error.message);}finally{button.disabled=false;button.textContent='إرسال الطلب إلى مسؤول العائلة';}
   }
-  function resetWizard(){unknown=false;$('#unknownParent').setAttribute('aria-pressed','false');$('#unknownParentFields').classList.add('hidden');$('#joinParentSearch').value='';$('#ancestor').value='';paintRows('join');renderPicker('join');showStep(1,false);}
+  function resetWizard(){joinPage=1;unknown=false;$('#unknownParent').setAttribute('aria-pressed','false');$('#unknownParentFields').classList.add('hidden');$('#joinParentSearch').value='';$('#ancestor').value='';paintRows('join');renderPicker('join');showStep(1,false);}
   document.addEventListener('click',async e=>{
     const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.joinPage){const matches=U.findPeople(people,$('#joinParentSearch').value,'');const last=Math.max(1,Math.ceil(matches.length/20));joinPage=Math.max(1,Math.min(last,joinPage+(b.dataset.joinPage==='next'?1:-1)));renderPicker('join');}
     if(b.dataset.review)openReview(b.dataset.review);
     if(b.dataset.reject){b.disabled=true;try{const rows=await api('/rest/v1/family_requests?id=eq.'+encodeURIComponent(b.dataset.reject)+'&status=eq.pending',{method:'PATCH',admin:true,prefer:'return=representation',body:{status:'rejected'}});if(!rows?.length)throw Error('تمت مراجعة هذا الطلب من قبل.');await refresh();showMessage('تم رفض الطلب.');}catch(error){showMessage(error.message);b.disabled=false;}}
     if(b.dataset.requestParent){navigate('tree');window.dispatchEvent(new CustomEvent('tree:focus',{detail:b.dataset.requestParent}));}
@@ -127,7 +135,7 @@
     if(b.dataset.removeName!==undefined){const kind=b.dataset.nameKind,values=rowValues(kind);if(values.length>1){values.splice(Number(b.dataset.removeName),1);paintRows(kind,values);}}
   });
   $('#requestFilters').addEventListener('change',renderRequests);
-  $('#joinParentSearch').addEventListener('input',()=>renderPicker('join'));
+  $('#joinParentSearch').addEventListener('input',()=>{joinPage=1;renderPicker('join');});
   $('#reviewParentSearch').addEventListener('input',()=>renderPicker('review'));
   $('#reviewGrandparent').addEventListener('change',()=>{const parent=family($('#reviewParent').value).person;if($('#reviewGrandparent').value&&parent?.parent_id!==$('#reviewGrandparent').value)$('#reviewParent').value='';renderPicker('review');});
   $('#unknownParent').onclick=()=>{unknown=!unknown;$('#unknownParent').setAttribute('aria-pressed',String(unknown));$('#unknownParentFields').classList.toggle('hidden',!unknown);if(unknown){$('#ancestor').value='';$('#context').focus();}renderPicker('join');setError('joinError','');};
