@@ -70,3 +70,14 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount #accountLabel,.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount #accountChevron{display:none!important}
 .sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount>[data-icon]{width:18px;height:18px}
 .sidebar-bottom-row:has(.admin-greeting:not(.hidden)) .sidebar-admin-actions{gap:4px}
+
+/* Comfortable iPhone-style account footer: readable text and 44px touch targets */
+.sidebar-bottom-row{gap:10px;min-height:52px}
+.sidebar-bottom-row .admin-greeting{font-size:15px;line-height:1.45;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
+.sidebar-bottom-row .admin-greeting strong{font-size:15px}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount{width:44px;min-width:44px;height:44px;padding:10px;border-radius:13px}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount>[data-icon]{width:23px;height:23px}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) .sidebar-admin-actions{gap:8px}
+.sidebar-bottom-row .sidebar-admin-actions .icon-button{width:44px;height:44px;min-width:44px;padding:10px;border-radius:13px}
+.sidebar-bottom-row .sidebar-admin-actions .icon-button>[data-icon]{width:23px;height:23px}
+@media(max-width:390px){.sidebar-bottom-row{gap:7px}.sidebar-bottom-row .admin-greeting{font-size:14px}.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) .sidebar-admin-actions{gap:6px}}
