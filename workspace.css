@@ -56,3 +56,9 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .sidebar-bottom-row #sidebarAccount .account-chevron{font-size:17px;line-height:1;margin-right:auto;color:#70806f;transition:transform .18s ease}
 .sidebar-bottom-row #sidebarAccount[aria-expanded="true"] .account-chevron{transform:rotate(180deg)}
 .sidebar-bottom-row .sidebar-admin-actions{gap:0}
+
+/* Invitation parent pagination */
+.join-parent-pages{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:12px 0 8px;font-size:13px;color:#627064}
+.join-parent-pages button{border:1px solid #d9e3d4;background:#fff;border-radius:8px;padding:8px 16px;color:#375b43;cursor:pointer}
+.join-parent-pages button:disabled{opacity:.4;cursor:default}
+.unknown-parent .unknown-parent-link{text-decoration:underline;text-underline-offset:4px;font-weight:700}
