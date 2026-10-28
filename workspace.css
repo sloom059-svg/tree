@@ -81,3 +81,26 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .sidebar-bottom-row .sidebar-admin-actions .icon-button{width:44px;height:44px;min-width:44px;padding:10px;border-radius:13px}
 .sidebar-bottom-row .sidebar-admin-actions .icon-button>[data-icon]{width:23px;height:23px}
 @media(max-width:390px){.sidebar-bottom-row{gap:7px}.sidebar-bottom-row .admin-greeting{font-size:14px}.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) .sidebar-admin-actions{gap:6px}}
+
+/* Share family invitation – mobile-friendly native dialog */
+.family-share-dialog{width:min(94vw,520px);max-width:520px;max-height:90dvh;overflow:auto;border:1px solid #e3e9df;border-radius:22px;padding:25px;background:#fff;box-shadow:0 25px 85px #142e2635;color:#263c30;font-family:inherit}
+.family-share-dialog::backdrop{background:#10271d91}
+.family-share-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:24px}
+.family-share-head h2{font-size:22px;font-weight:700;margin:0 0 7px}
+.family-share-head p{font-size:14px;line-height:1.7;color:#708075;margin:0}
+.family-share-close{width:42px;height:42px;flex:none;border:1px solid #e8ede7;border-radius:12px;font-size:26px;background:#f7faf6;color:#526c58;cursor:pointer}
+.family-share-dialog label{display:block;font-size:14px;font-weight:600;margin:0 0 9px}
+.family-share-link{display:flex;gap:8px;margin:0 0 22px}
+.family-share-link input,.family-share-dialog #familyInviteInput{width:100%;min-width:0;border:1px solid #dfe6de;border-radius:12px;padding:13px;background:#f7faf6;color:#405544;font:14px inherit}
+.family-share-link button{flex:none;min-height:46px;border:0;border-radius:12px;padding:0 15px;background:#177944;color:#fff;font:inherit;cursor:pointer}
+.family-share-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.family-share-option{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:12px 2px;min-height:94px;border:1px solid #e5ebe3;border-radius:16px;background:#fff;color:#364b3b;font:inherit;font-size:13px;text-decoration:none;cursor:pointer}
+.family-share-option:hover{background:#f4f9f3}
+.share-service-icon{width:45px;height:45px;display:grid;place-items:center;border-radius:50%;font-weight:700;font-size:24px;color:#fff}
+.share-wa{background:#23bd61}.share-tg{background:#32a9dc}.share-mail{background:#d6a34d}.share-more{background:#78958c}
+.family-share-feedback{min-height:20px;margin:12px 0 0;color:#25804a;font-size:13px}
+.family-share-error{min-height:20px;color:#b73535;font-size:13px}
+#familyShareInviteEntry{padding-top:10px}
+#familyShareInviteEntry input{margin-bottom:12px}
+.family-share-dialog.share-needs-invite .family-share-options{display:none}
+@media(max-width:480px){.family-share-dialog{padding:20px 16px;border-radius:20px}.family-share-options{gap:6px}.family-share-option{font-size:12px}.share-service-icon{width:42px;height:42px}}
