@@ -52,6 +52,7 @@
   }
   function openReview(id){
     const request=requests.find(r=>r.id===id&&r.status==='pending');if(!request){showMessage('هذا الطلب لم يعد بانتظار المراجعة. حدّث الصفحة.');return;}
+    window.FamilyNotifications?.markRead(id).catch(()=>{});
     reviewRequest=request;$('#reviewId').value=id;const date=U.dateParts(request.created_at);
     $('#reviewMeta').textContent=(request.sender_name||'مقدم الطلب')+' · '+date.date+' · '+date.time;
     $('#reviewContext').value=request.context||'';$('#reviewParentSearch').value='';$('#reviewGrandparent').value='';syncReviewOptions();$('#reviewParent').value=request.selected_parent||'';
@@ -134,6 +135,14 @@
   document.addEventListener('input',e=>{if(e.target.matches('[data-name-kind]'))syncNames(e.target.dataset.nameKind);});
   $('#saveRequestDraft').onclick=saveDraft;$('#reviewForm').addEventListener('submit',approve);$('#form').addEventListener('submit',submitJoin);
   window.addEventListener('tree:render',()=>{renderRequests();renderPicker('join');if($('#reviewDialog').open){syncReviewOptions();renderPicker('review');}});
-  window.FamilyContributions={renderRequests};
+  function openRequest(id){
+    const request=requests.find(r=>r.id===id);if(!request)return;
+    navigate('admin');const mode=request.status==='pending'?'pending':request.status==='approved'?'approved':'rejected';
+    const radio=document.querySelector('input[name="requestFilter"][value="'+mode+'"]');if(radio)radio.checked=true;
+    renderRequests();
+    requestAnimationFrame(()=>document.querySelector('[data-request-card="'+CSS.escape(id)+'"]')?.scrollIntoView({behavior:'smooth',block:'center'}));
+    if(request.status==='pending')openReview(id);
+  }
+  window.FamilyContributions={renderRequests,openRequest};
   paintRows('review');resetWizard();renderRequests();
 })();

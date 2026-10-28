@@ -58,7 +58,7 @@
   function scheduleLayout(){cancelAnimationFrame(layoutFrame);layoutFrame=requestAnimationFrame(()=>{drawLines();if(!fitted)fit();});}
   window.addEventListener('tree:layout',scheduleLayout);
   window.addEventListener('tree:navigate',e=>{
-    closeSidebar();
+    closeSidebar();closeNotifications();
     document.querySelectorAll('.sidebar-nav [data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===e.detail&&!b.dataset.adminSection));
     $('#pageTitle').textContent={tree:'شجرة الجارالله',admin:'إدارة العائلة',join:'ساهم في الشجرة',home:'عائلة الجارالله',receipt:'متابعة الطلب'}[e.detail]||'شجرة الجارالله';
     if(e.detail==='tree')scheduleLayout();
@@ -67,14 +67,10 @@
     isAdmin=e.detail.isAdmin;
     document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
     const count=e.detail.pending;
-    for(const selector of ['#requestsBadge','#notificationBadge']){
-      const badge=$(selector);badge.textContent=count>99?'99+':String(count);
-      badge.classList.toggle('hidden',!isAdmin||count===0);
-      badge.setAttribute('aria-label',`${count} طلبات إضافة بانتظار المراجعة`);
-    }
-    const notificationLabel=count?'الإشعارات، '+count+' طلبات إضافة بانتظار المراجعة':'الإشعارات، لا توجد طلبات بانتظار المراجعة';
-    $('#sidebarNotifications').setAttribute('aria-label',notificationLabel);
-    $('#sidebarNotifications').setAttribute('title',notificationLabel);
+    const badge=$('#requestsBadge');badge.textContent=count>99?'99+':String(count);
+    badge.classList.toggle('hidden',!isAdmin||count===0);
+    badge.setAttribute('aria-label',`${count} طلبات إضافة بانتظار المراجعة`);
+    renderNotifications();
     $('#accountLabel').textContent=isAdmin?'حساب المسؤول':'دخول المسؤول';
     $('#treeCountLabel').textContent=e.detail.hasAccess?e.detail.count+' أفراد في شجرة العائلة':'أسماء تجمعنا، وصلات تحفظ حكايتنا';
     $('#workspaceEmpty').classList.toggle('hidden',e.detail.count>0);
@@ -140,6 +136,43 @@
     else if(e.key==='-'){$('#zoomOut').click();e.preventDefault();}
     else if(e.key==='0'){fit();e.preventDefault();}
   });
+  const locallyReadNotifications=new Set(),markingNotifications=new Map();
+  let notificationSignature='';
+  function closeNotifications(){$('#notificationPanel').classList.add('hidden');$('#sidebarNotifications').setAttribute('aria-expanded','false');}
+  function renderNotifications(){
+    const U=window.FamilyRequestUtils,unread=U.unreadNotifications(requests,locallyReadNotifications),count=unread.length;
+    const badge=$('#notificationBadge');badge.textContent=count>99?'99+':String(count);badge.classList.toggle('hidden',!isAdmin||!count);
+    const label=count?'الإشعارات، '+count+' غير مقروءة':'الإشعارات، لا توجد إشعارات جديدة';
+    $('#sidebarNotifications').setAttribute('aria-label',label);$('#sidebarNotifications').setAttribute('title',label);
+    $('#notificationSummary').textContent=count?count+' جديدة':'لا جديد';
+    if(!isAdmin){closeNotifications();$('#notificationList').innerHTML='';locallyReadNotifications.clear();notificationSignature='';return;}
+    const signature=JSON.stringify(requests.map(r=>[r.id,r.sender_name,r.created_at,!!r.notification_read_at||locallyReadNotifications.has(r.id)]));
+    if(signature===notificationSignature)return;notificationSignature=signature;
+    const unreadIds=new Set(unread.map(r=>r.id)),recent=[...unread,...requests.filter(r=>!unreadIds.has(r.id))].slice(0,8);
+    $('#notificationList').innerHTML=recent.length?recent.map(r=>{
+      const fresh=unreadIds.has(r.id),date=U.dateParts(r.created_at);
+      return `<button type="button" class="notification-item ${fresh?'unread':'read'}" data-open-notification="${U.escapeHTML(r.id)}"><span class="notification-dot" aria-hidden="true"></span><span><strong>طلب إضافة من ${U.escapeHTML(r.sender_name||'أحد الأقارب')}</strong><small>${U.escapeHTML(date.date)} · ${U.escapeHTML(date.time)}</small><em>${fresh?'اضغط لفتح الطلب':'تم الاطلاع'}</em></span></button>`;
+    }).join(''):'<p class="notifications-empty">لا توجد إشعارات حتى الآن.</p>';
+  }
+  function markNotificationRead(id){
+    const request=requests.find(r=>r.id===id);
+    if(!isAdmin||!request||request.notification_read_at||locallyReadNotifications.has(id))return Promise.resolve();
+    if(markingNotifications.has(id))return markingNotifications.get(id);
+    const task=(async()=>{
+      const rows=await api('/rest/v1/family_requests?id=eq.'+encodeURIComponent(id),{method:'PATCH',admin:true,prefer:'return=representation',body:{notification_read_at:new Date().toISOString()}});
+      if(!rows?.length)throw Error('تعذر تحديث الإشعار. حاول مرة أخرى.');
+      locallyReadNotifications.add(id);requests=requests.map(r=>r.id===id?rows[0]:r);render();
+    })().finally(()=>markingNotifications.delete(id));
+    markingNotifications.set(id,task);return task;
+  }
+  $('#sidebarNotifications').onclick=()=>{const open=$('#notificationPanel').classList.contains('hidden');$('#notificationPanel').classList.toggle('hidden',!open);$('#sidebarNotifications').setAttribute('aria-expanded',String(open));};
+  document.addEventListener('click',async e=>{
+    const item=e.target.closest('[data-open-notification]');
+    if(item){try{await markNotificationRead(item.dataset.openNotification);closeNotifications();window.FamilyContributions?.openRequest(item.dataset.openNotification);}catch(error){showMessage(error.message);}return;}
+    if(!e.target.closest('#notificationPanel,#sidebarNotifications'))closeNotifications();
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNotifications();});
+  window.FamilyNotifications={markRead:markNotificationRead};
   function closeSidebar(){$('#appSidebar').classList.remove('open');$('#sidebarScrim').classList.add('hidden');$('#sidebarToggle').setAttribute('aria-expanded','false');}
   $('#sidebarToggle').onclick=()=>{const open=$('#appSidebar').classList.toggle('open');$('#sidebarScrim').classList.toggle('hidden',!open);$('#sidebarToggle').setAttribute('aria-expanded',String(open));};
   $('#sidebarScrim').onclick=closeSidebar;

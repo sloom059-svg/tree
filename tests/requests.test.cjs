@@ -33,3 +33,12 @@ test('shared invitation links use a compact fragment on the canonical domain',()
   assert.equal(new URL(link).search,'');
   assert.equal(U.inviteLink(''),'');
 });
+
+test('unread notifications are independent of approval status and opening one preserves pending review',()=>{
+  const pending={id:'pending',status:'pending',notification_read_at:null};
+  const automatic={id:'automatic',status:'approved',notification_read_at:null};
+  const readPending={id:'read',status:'pending',notification_read_at:'2026-10-28T12:00:00Z'};
+  assert.deepEqual(U.unreadNotifications([pending,automatic,readPending]).map(r=>r.id),['pending','automatic']);
+  assert.deepEqual(U.unreadNotifications([pending,automatic,readPending],new Set(['pending'])).map(r=>r.id),['automatic']);
+  assert.equal(pending.status,'pending');
+});

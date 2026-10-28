@@ -19,7 +19,7 @@ function setup(){
   const listeners={};const frames=[];let fetches=0;
   const document={hidden:false,querySelectorAll:()=>[],addEventListener(type,fn){(listeners[type]??=[]).push(fn);}};
   const context={console,Date,Math,Map,Set,document,$,people:[{id:'root',name:'اختبار'}],session:{access_token:'test-only'},requests:[],ResizeObserver:class{observe(){}},CSS:{escape:s=>s},requestAnimationFrame:fn=>{frames.push(fn);return frames.length;},cancelAnimationFrame:()=>{},setInterval:()=>{},showTrash:async()=>{},showMessage:()=>{},api:async()=>{fetches++;return[{id:'request',status:'pending'}];}};
-  context.window={addEventListener(type,fn){(listeners[type]??=[]).push(fn);},print(){}};
+  context.window={FamilyRequestUtils:require('../request-utils.js'),addEventListener(type,fn){(listeners[type]??=[]).push(fn);},print(){}};
   function emit(type,detail){listeners[type]?.forEach(fn=>fn({detail}));}
   context.render=()=>emit('tree:render',{isAdmin:true,pending:1,count:1,hasAccess:true});
   vm.createContext(context);vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../workspace.js'),'utf8'),context);

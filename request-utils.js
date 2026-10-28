@@ -1,6 +1,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FamilyRequestUtils=api;})(typeof window==='object'?window:globalThis,function(){
   'use strict';
   const escapeHTML=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const unreadNotifications=(requests,locallyRead=new Set())=>requests.filter(request=>!request.notification_read_at&&!locallyRead.has(request.id));
   const inviteLink=code=>code?'https://aljarallah.vercel.app/#i='+encodeURIComponent(code):'';
   const normalize=value=>String(value||'').normalize('NFKC').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').trim().toLowerCase();
   function namesFromRequest(request){
@@ -25,5 +26,5 @@
     const terms=normalize(query).split(/\s+/).filter(term=>term&&term!=='بن'&&term!=='ابن');
     return people.filter(person=>{if(grandparentId&&person.parent_id!==grandparentId)return false;const family=lineage(person,people);const text=normalize([person.name,family.parent?.name,family.grandparent?.name].filter(Boolean).join(' '));return terms.every(t=>text.includes(t));});
   }
-  return{normalize,namesFromRequest,validateNames,dateParts,lineage,findPeople,phoneDigits,escapeHTML,inviteLink};
+  return{normalize,namesFromRequest,validateNames,dateParts,lineage,findPeople,phoneDigits,escapeHTML,inviteLink,unreadNotifications};
 });
