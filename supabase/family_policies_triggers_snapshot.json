@@ -1,0 +1,148 @@
+{
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "family_people",
+      "policyname": "people_invited_read",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((deleted_at IS NULL) AND ( SELECT family_private.has_invite() AS has_invite))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "family_people",
+      "policyname": "people_admin_all",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "( SELECT family_private.is_admin() AS is_admin)",
+      "with_check": "( SELECT family_private.is_admin() AS is_admin)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "family_requests",
+      "policyname": "requests_admin_update",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "( SELECT family_private.is_admin() AS is_admin)",
+      "with_check": "( SELECT family_private.is_admin() AS is_admin)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "family_requests",
+      "policyname": "requests_admin_read",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "( SELECT family_private.is_admin() AS is_admin)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "family_requests",
+      "policyname": "requests_invited_submit",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((status = 'pending'::text) AND ( SELECT family_private.has_invite() AS has_invite))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "family_spouses",
+      "policyname": "spouses_invited_read",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "( SELECT family_private.has_invite() AS has_invite)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "family_spouses",
+      "policyname": "spouses_admin_all",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "ALL",
+      "qual": "( SELECT family_private.is_admin() AS is_admin)",
+      "with_check": "( SELECT family_private.is_admin() AS is_admin)"
+    }
+  ],
+  "triggers": [
+    {
+      "name": "family_request_auto_add",
+      "definition": "CREATE TRIGGER family_request_auto_add AFTER INSERT ON public.family_requests FOR EACH ROW EXECUTE FUNCTION family_private.process_automatic_request()"
+    },
+    {
+      "name": "rotate_family_invite_short_code",
+      "definition": "CREATE TRIGGER rotate_family_invite_short_code BEFORE UPDATE OF token ON family_private.invitation FOR EACH ROW EXECUTE FUNCTION family_private.rotate_invite_short_code()"
+    },
+    {
+      "name": "new_family_request_notification",
+      "definition": "CREATE TRIGGER new_family_request_notification BEFORE INSERT ON public.family_requests FOR EACH ROW EXECUTE FUNCTION family_private.new_request_notification()"
+    }
+  ],
+  "constraints": [
+    {
+      "schema": "family_private",
+      "table": "invitation",
+      "name": "family_invitation_short_code_unique",
+      "definition": "UNIQUE (short_code)"
+    },
+    {
+      "schema": "family_private",
+      "table": "invitation",
+      "name": "family_invitation_short_code_format",
+      "definition": "CHECK ((short_code ~ '^[A-Za-z0-9_-]{16}$'::text))"
+    },
+    {
+      "schema": "family_private",
+      "table": "invitation",
+      "name": "invitation_id_check",
+      "definition": "CHECK (id)"
+    },
+    {
+      "schema": "family_private",
+      "table": "invitation",
+      "name": "invitation_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "schema": "family_private",
+      "table": "bootstrap",
+      "name": "bootstrap_id_check",
+      "definition": "CHECK (id)"
+    },
+    {
+      "schema": "family_private",
+      "table": "bootstrap",
+      "name": "bootstrap_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "schema": "family_private",
+      "table": "settings",
+      "name": "settings_id_check",
+      "definition": "CHECK (id)"
+    },
+    {
+      "schema": "family_private",
+      "table": "settings",
+      "name": "settings_pkey",
+      "definition": "PRIMARY KEY (id)"
+    }
+  ]
+}
