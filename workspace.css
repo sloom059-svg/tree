@@ -140,3 +140,14 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
   box-shadow:0 2px 5px rgba(172,34,54,.18);
   pointer-events:none;
 }
+
+/* Keep pending-request count optically centered in a true circle */
+.app-sidebar #requestsBadge{
+  display:grid;place-items:center;
+  width:23px;min-width:23px;height:23px;min-height:23px;
+  padding:0;line-height:1;
+  font-family:Arial,system-ui,sans-serif;
+  font-size:12px;font-weight:700;
+  text-align:center;
+}
+.app-sidebar #requestsBadge:not(.hidden){display:grid}
