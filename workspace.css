@@ -104,3 +104,14 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 #familyShareInviteEntry input{margin-bottom:12px}
 .family-share-dialog.share-needs-invite .family-share-options{display:none}
 @media(max-width:480px){.family-share-dialog{padding:20px 16px;border-radius:20px}.family-share-options{gap:6px}.family-share-option{font-size:12px}.share-service-icon{width:42px;height:42px}}
+
+/* Crisp brand SVG icons; neutral, spacious iOS-like share buttons */
+.family-share-option{border-radius:17px;background:#fff;transition:transform .16s ease,background .16s ease,border-color .16s ease}
+.family-share-option:active{transform:scale(.97)}
+.share-service-icon{width:52px;height:52px;background:#f3f6f4!important;border:1px solid #e9eeeb;border-radius:16px}
+.share-service-icon img{width:27px;height:27px;display:block;object-fit:contain}
+.share-wa{background:#e9f9ee!important;border-color:#d5f1de}.share-wa img{filter:invert(48%) sepia(80%) saturate(610%) hue-rotate(91deg) brightness(95%)}
+.share-tg{background:#e9f6fd!important;border-color:#d9eefa}.share-tg img{filter:invert(53%) sepia(57%) saturate(1033%) hue-rotate(157deg) brightness(95%)}
+.share-mail{background:#fff3e9!important;border-color:#fae9d9}.share-mail img{filter:invert(50%) sepia(48%) saturate(680%) hue-rotate(343deg)}
+.share-more{background:#eef1f9!important;border-color:#e2e7f2}.share-more img{filter:invert(39%) sepia(15%) saturate(1237%) hue-rotate(187deg)}
+@media(max-width:480px){.share-service-icon{width:47px;height:47px;border-radius:14px}.share-service-icon img{width:25px;height:25px}}
