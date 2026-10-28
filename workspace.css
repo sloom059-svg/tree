@@ -62,3 +62,11 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .join-parent-pages button{border:1px solid #d9e3d4;background:#fff;border-radius:8px;padding:8px 16px;color:#375b43;cursor:pointer}
 .join-parent-pages button:disabled{opacity:.4;cursor:default}
 .unknown-parent .unknown-parent-link{text-decoration:underline;text-underline-offset:4px;font-weight:700}
+
+/* Compact greeting, separate avatar menu and adjacent notification bell */
+.sidebar-bottom-row .admin-greeting{flex:1;min-width:0;font-size:12px;white-space:nowrap;color:#55685b}
+.sidebar-bottom-row .admin-greeting strong{font-weight:700;color:#34533c;direction:ltr;unicode-bidi:isolate}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount{flex:none;width:34px;min-width:34px;height:34px;padding:7px;justify-content:center;border:1px solid #e6eae1;border-radius:9px;background:#fff}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount #accountLabel,.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount #accountChevron{display:none!important}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) #sidebarAccount>[data-icon]{width:18px;height:18px}
+.sidebar-bottom-row:has(.admin-greeting:not(.hidden)) .sidebar-admin-actions{gap:4px}
