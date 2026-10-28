@@ -5,7 +5,9 @@
   const statusLabels={pending:'قيد الانتظار',approved:'مقبول',rejected:'مرفوض'};
   function tags(names){return names.map((name,i)=>`<span class="name-tag"><i>${i+1}</i>${html(name)}</span>`).join('');}
   function family(id){return U.lineage(people.find(p=>p.id===id),people);}
-  function selectionText(id){const f=family(id);return f.person?`<b>الأب: ${html(f.person.name)}</b><small>الجد (والد الأب): ${html(f.parent?.name||'غير مسجل في الشجرة')}</small>`:'';}
+  function selectionText(id){const f=family(id);return f.person?`<b>الأب المختار: ${html(U.fullName(f.person,people))}</b><small>النسب حسب الأسماء المسجلة في الشجرة</small>`:'';}
+  function completedNames(names,parent){return names.filter(n=>n.trim()).map(n=>U.childFullName(n,parent,people));}
+  function fullNameTags(names,parent){return tags(completedNames(names,parent));}
   function setError(id,message){const el=$('#'+id);el.textContent=message;el.classList.toggle('hidden',!message);if(message){el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});}}
   function renderRequests(){
     const selected=document.querySelector('input[name="requestFilter"]:checked');if(selected)filter=selected.value;
@@ -16,7 +18,7 @@
     if(!session||!invitation){$('#requests').innerHTML='';return;}
     $('#requests').innerHTML=shown.length?shown.map(request=>{
       const names=U.namesFromRequest(request),f=family(request.selected_parent),date=U.dateParts(request.created_at);
-      return `<article class="request-card" data-request-card="${html(request.id)}"><div class="request-card-header"><div><h3>${html(request.sender_name||'طلب إضافة أسماء')}</h3><p>طلب إضافة ${names.length} من أفراد العائلة</p></div><div><span class="request-source">رابط جمع الأسماء</span><span class="request-status status-${['pending','approved','rejected'].includes(request.status)?request.status:'pending'}">${html(statusLabels[request.status]||request.status)}</span></div></div><section class="request-detail-section"><h4>تفاصيل الطلب</h4><div class="request-meta-grid"><dl><dt>مقدم الطلب</dt><dd>${html(request.sender_name||'غير مسجل')}</dd></dl><dl><dt>رقم الجوال</dt><dd>${request.phone?`<a href="tel:${html((String(request.phone).trim().startsWith('+')?'+':'')+U.phoneDigits(request.phone))}" dir="ltr">${html(request.phone)}</a>`:'لم يُكتب'}</dd></dl><dl><dt>تاريخ الطلب</dt><dd><time datetime="${html(request.created_at||'')}">${html(date.date)}</time><small>${html(date.time)} · بتوقيت السعودية</small></dd></dl></div></section><section class="request-detail-section"><h4>مكان إضافة الأسماء في الشجرة</h4><div class="request-family-grid"><dl><dt>الأب المختار</dt><dd>${html(f.person?.name||'بحاجة إلى تحديد')}</dd></dl><dl><dt>الجد (والد الأب)</dt><dd>${html(f.parent?.name||'غير مسجل')}</dd></dl><dl><dt>جد الأب</dt><dd>${html(f.grandparent?.name||'غير مسجل')}</dd></dl></div>${request.context?`<p class="request-context"><b>توضيح مقدم الطلب:</b> ${html(request.context)}</p>`:''}</section><section class="request-detail-section"><h4>الأسماء المطلوب إضافتها <span class="muted">(${names.length})</span></h4><div class="name-tags">${tags(names)}</div></section><div class="request-card-actions">${request.status==='pending'?`<button type="button" class="btn" data-review="${html(request.id)}">مراجعة الطلب وتعديله</button>`:''}${f.person?`<button type="button" class="tool-btn" data-request-parent="${html(f.person.id)}">عرض الأب في الشجرة</button>`:''}${request.status==='pending'?`<button type="button" class="reject-request" data-reject="${html(request.id)}">رفض الطلب</button>`:''}</div></article>`;
+      return `<article class="request-card" data-request-card="${html(request.id)}"><div class="request-card-header"><div><h3>${html(request.sender_name||'طلب إضافة أسماء')}</h3><p>طلب إضافة ${names.length} من أفراد العائلة</p></div><div><span class="request-source">رابط جمع الأسماء</span><span class="request-status status-${['pending','approved','rejected'].includes(request.status)?request.status:'pending'}">${html(statusLabels[request.status]||request.status)}</span></div></div><section class="request-detail-section"><h4>تفاصيل الطلب</h4><div class="request-meta-grid"><dl><dt>مقدم الطلب</dt><dd>${html(request.sender_name||'غير مسجل')}</dd></dl><dl><dt>رقم الجوال</dt><dd>${request.phone?`<a href="tel:${html((String(request.phone).trim().startsWith('+')?'+':'')+U.phoneDigits(request.phone))}" dir="ltr">${html(request.phone)}</a>`:'لم يُكتب'}</dd></dl><dl><dt>تاريخ الطلب</dt><dd><time datetime="${html(request.created_at||'')}">${html(date.date)}</time><small>${html(date.time)} · بتوقيت السعودية</small></dd></dl></div></section><section class="request-detail-section"><h4>مكان إضافة الأسماء في الشجرة</h4><div class="request-family-grid"><dl><dt>الأب المختار</dt><dd>${html(f.person?U.fullName(f.person,people):'بحاجة إلى تحديد')}</dd></dl><dl><dt>الجد (والد الأب)</dt><dd>${html(f.parent?.name||'غير مسجل')}</dd></dl><dl><dt>جد الأب</dt><dd>${html(f.grandparent?.name||'غير مسجل')}</dd></dl></div>${request.context?`<p class="request-context"><b>توضيح مقدم الطلب:</b> ${html(request.context)}</p>`:''}</section><section class="request-detail-section"><h4>الأسماء المطلوب إضافتها <span class="muted">(${names.length})</span></h4><div class="name-tags">${fullNameTags(names,f.person)}</div></section><div class="request-card-actions">${request.status==='pending'?`<button type="button" class="btn" data-review="${html(request.id)}">مراجعة الطلب وتعديله</button>`:''}${f.person?`<button type="button" class="tool-btn" data-request-parent="${html(f.person.id)}">عرض الأب في الشجرة</button>`:''}${request.status==='pending'?`<button type="button" class="reject-request" data-reject="${html(request.id)}">رفض الطلب</button>`:''}</div></article>`;
     }).join(''):`<div class="request-empty">${filter==='pending'?'لا توجد طلبات بانتظار المراجعة.':filter==='all'?'لا توجد طلبات حتى الآن.':'لا توجد طلبات بهذه الحالة.'}</div>`;
   }
   function renderPicker(kind){
@@ -28,7 +30,7 @@
     const currentPage=review?1:joinPage;
     results.innerHTML=matches.slice((currentPage-1)*pageSize,currentPage*pageSize).map(person=>{
       const f=family(person.id),chosen=select.value===person.id&&(!unknown||review);
-      return `<button class="parent-result" type="button" data-pick-parent="${html(person.id)}" data-picker="${kind}" aria-pressed="${chosen}"><span class="parent-radio" aria-hidden="true">${chosen?'✓':''}</span><span><strong>${html(person.name)}</strong><small><span>والده: ${html(f.parent?.name||'غير مسجل')}</span><span>جده: ${html(f.grandparent?.name||'غير مسجل')}</span></small></span></button>`;
+      return `<button class="parent-result" type="button" data-pick-parent="${html(person.id)}" data-picker="${kind}" aria-pressed="${chosen}"><span class="parent-radio" aria-hidden="true">${chosen?'✓':''}</span><span><strong>${html(U.fullName(person,people))}</strong><small><span>النسب الكامل المتوفر في الشجرة</span></small></span></button>`;
     }).join('')||'<p class="picker-empty">لم نجد اسمًا مطابقًا. جرّب اسم الأب أو والده، أو اختر «لم أجد الأب في الشجرة» في نموذج المشاركة.</p>';
     if(!review){
       const nav=$('#joinParentPages');
@@ -39,7 +41,7 @@
   }
   function syncReviewOptions(){
     const prior=$('#reviewParent').value;
-    $('#reviewParent').innerHTML='<option value="">اختر الأب</option>'+people.map(p=>`<option value="${html(p.id)}">${html(personLabel(p))}</option>`).join('');
+    $('#reviewParent').innerHTML='<option value="">اختر الأب</option>'+people.map(p=>`<option value="${html(p.id)}">${html(U.fullName(p,people))}</option>`).join('');
     $('#reviewParent').value=prior;
     const oldGrand=$('#reviewGrandparent').value;
     const grandparents=people.filter(p=>people.some(child=>child.parent_id===p.id));
@@ -92,7 +94,7 @@
     step=next;document.querySelectorAll('.join-step').forEach(el=>el.classList.toggle('hidden',Number(el.dataset.step)!==step));
     document.querySelectorAll('[data-step-indicator]').forEach(el=>{const n=Number(el.dataset.stepIndicator);el.classList.toggle('completed',n<step);if(n===step)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
     if(step===2)$('#joinChosenParent').innerHTML=unknown?html(chosenParent()):chosenParent();
-    if(step===3){$('#joinFinalParent').innerHTML=unknown?html(chosenParent()):chosenParent();$('#joinFinalNames').innerHTML=tags(rowValues('join').map(x=>x.trim()).filter(Boolean));}
+    if(step===3){$('#joinFinalParent').innerHTML=unknown?html(chosenParent()):chosenParent();$('#joinFinalNames').innerHTML=unknown?tags(rowValues('join').map(x=>x.trim()).filter(Boolean)):fullNameTags(rowValues('join').map(x=>x.trim()).filter(Boolean),family($('#ancestor').value).person);}
     setError('joinError','');
     if(scroll){$('#joinBlock').scrollIntoView({behavior:'smooth',block:'start'});const heading=document.querySelector('.join-step:not(.hidden) h2');heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   }
