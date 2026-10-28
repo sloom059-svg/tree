@@ -37,7 +37,48 @@ function paintSort(){$('#sortList').innerHTML=sortIds.map((id,i)=>`<div class="s
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.personAction){document.querySelectorAll('.person-menu[open]').forEach(x=>x.open=false);actionPerson=people.find(p=>p.id===b.dataset.id);if(!actionPerson)return;const a=b.dataset.personAction;if(a==='view')showPerson(actionPerson.id);if(a==='edit'){$('#editPersonName').value=actionPerson.name;$('#editError').textContent='';$('#editPersonDialog').showModal()}if(a==='sort'){sortIds=people.filter(p=>p.parent_id===actionPerson.id).map(p=>p.id);paintSort();$('#sortError').textContent='';$('#sortDialog').showModal()}if(a==='delete'||a==='promote'){const n=people.filter(p=>p.parent_id===actionPerson.id).length;$('#deleteDetails').textContent='حذف '+actionPerson.name+(n?' وله '+n+' من الأبناء. ترقية الأبناء تعني ربطهم بأب الشخص المحذوف.':' من الشجرة.');$('#deleteLeaf').disabled=n>0;$('#deletePromote').classList.toggle('hidden',n===0);$('#deleteError').textContent='';$('#deleteDialog').showModal()}}if(b.dataset.sortIndex!==undefined){const i=Number(b.dataset.sortIndex),j=i+Number(b.dataset.shift);if(j>=0&&j<sortIds.length){[sortIds[i],sortIds[j]]=[sortIds[j],sortIds[i]];paintSort()}}});
 $('#editPersonForm').onsubmit=async e=>{e.preventDefault();try{await manage('rename',{p_name:$('#editPersonName').value.trim()});$('#editPersonDialog').close();showMessage('تم تعديل الاسم.')}catch(e){$('#editError').textContent=e.message}};$('#saveSort').onclick=async()=>{try{await manage('reorder',{p_ids:sortIds});$('#sortDialog').close();showMessage('تم حفظ ترتيب الأبناء.')}catch(e){$('#sortError').textContent=e.message}};
 async function removePerson(action){try{await manage(action);$('#deleteDialog').close();showMessage('نُقل الفرد إلى سلة المحذوفات.')}catch(e){$('#deleteError').textContent=e.message==='has children'?'هذا الفرد له أبناء. اختر حذف وترقية الأبناء.':e.message}}$('#deleteLeaf').onclick=()=>removePerson('delete');$('#deletePromote').onclick=()=>removePerson('promote');
-async function showTrash(){const rows=await api('/rest/v1/family_people?select=id,name&deleted_at=not.is.null&order=deleted_at.desc',{admin:true});$('#trashList').innerHTML=rows.map(p=>`<div class="sort-item"><span>${esc(p.name)}</span><button class="tool-btn" data-restore="${p.id}">استرجاع</button></div>`).join('')||'<p class="muted">سلة المحذوفات فارغة.</p>';if(!$('#trashDialog').open)$('#trashDialog').showModal()}$('#openTrash').onclick=()=>showTrash().catch(e=>showMessage(e.message));document.addEventListener('click',async e=>{const b=e.target.closest('[data-restore]');if(!b)return;try{await api('/rest/v1/rpc/family_manage_person',{method:'POST',admin:true,body:{p_id:b.dataset.restore,p_action:'restore'}});await refresh();await showTrash()}catch(e){showMessage(e.message==='restore parent first'?'استرجع الأب أولًا.':e.message)}});
+let trashRows=[];
+async function showTrash(){
+  trashRows=await api('/rest/v1/family_people?select=id,name&deleted_at=not.is.null&order=deleted_at.desc',{admin:true});
+  $('#trashClearAll').classList.toggle('hidden',trashRows.length===0);
+  $('#trashList').innerHTML=trashRows.map(p=>`<div class="sort-item trash-item"><span>${esc(p.name)}</span><span class="trash-item-actions"><button type="button" class="tool-btn" data-restore="${p.id}">استرجاع</button><button type="button" class="trash-delete-icon" data-purge="${p.id}" title="حذف نهائي" aria-label="حذف ${esc(p.name)} نهائيًا"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7m4-7v7"/></svg></button></span></div>`).join('')||'<p class="muted">سلة المحذوفات فارغة.</p>';
+  if(!$('#trashDialog').open)$('#trashDialog').showModal();
+}
+$('#openTrash').onclick=()=>showTrash().catch(e=>showMessage(e.message));
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-restore]');
+  if(!b)return;
+  b.disabled=true;
+  try{await api('/rest/v1/rpc/family_manage_person',{method:'POST',admin:true,body:{p_id:b.dataset.restore,p_action:'restore'}});await refresh();await showTrash()}
+  catch(error){showMessage(error.message==='restore parent first'?'استرجع الأب أولًا.':error.message);b.disabled=false;}
+});
+let purgeId=null, purgeBusy=false;
+function confirmPurge(id){
+  if(purgeBusy)return;
+  purgeId=id;
+  const person=trashRows.find(p=>p.id===id);
+  $('#trashConfirmTitle').textContent=id?'حذف الاسم نهائيًا؟':'إفراغ سلة المحذوفات؟';
+  $('#trashConfirmText').textContent=id?`سيتم حذف «${person?.name||'هذا الاسم'}» نهائيًا ولن يمكن استرجاعه.`:`سيتم حذف جميع الأسماء الموجودة في السلة (${trashRows.length}) نهائيًا، ولا يمكن التراجع.`;
+  $('#trashConfirmError').textContent='';
+  $('#trashConfirmDialog').showModal();
+}
+$('#trashClearAll').onclick=()=>{if(trashRows.length)confirmPurge(null)};
+$('#trashList').addEventListener('click',e=>{const b=e.target.closest('[data-purge]');if(b)confirmPurge(b.dataset.purge)});
+$('#trashConfirmDelete').onclick=async()=>{
+  if(purgeBusy)return;
+  purgeBusy=true;
+  const button=$('#trashConfirmDelete');
+  button.disabled=true;
+  try{
+    await api('/rest/v1/rpc/family_purge_trash',{method:'POST',admin:true,body:{p_id:purgeId}});
+    $('#trashConfirmDialog').close();
+    await refresh();
+    await showTrash();
+    showMessage(purgeId?'تم حذف الاسم نهائيًا.':'تم إفراغ سلة المحذوفات.');
+  }catch(error){$('#trashConfirmError').textContent=error.message;}
+  finally{purgeBusy=false;button.disabled=false;}
+};
+
 let dragSortId=null;$('#sortList').addEventListener('dragstart',e=>{const row=e.target.closest('[data-sort-id]');if(row){dragSortId=row.dataset.sortId;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragSortId)}});$('#sortList').addEventListener('dragover',e=>{if(e.target.closest('[data-sort-id]'))e.preventDefault()});$('#sortList').addEventListener('drop',e=>{e.preventDefault();const target=e.target.closest('[data-sort-id]');if(!target||!dragSortId)return;const from=sortIds.indexOf(dragSortId),to=sortIds.indexOf(target.dataset.sortId);if(from>=0&&to>=0&&from!==to){sortIds.splice(to,0,sortIds.splice(from,1)[0]);paintSort()}dragSortId=null});
 document.addEventListener('toggle',e=>{const menu=e.target;if(!menu.matches?.('.person-menu')||!menu.open)return;document.querySelectorAll('.person-menu[open]').forEach(x=>{if(x!==menu)x.open=false});const canvas=$('#treeCanvas').getBoundingClientRect();menu.classList.toggle('menu-up',canvas.bottom-menu.getBoundingClientRect().bottom<230)},true);document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.person-menu[open]').forEach(x=>x.open=false)});document.addEventListener('click',e=>{if(!e.target.closest('.person-menu'))document.querySelectorAll('.person-menu[open]').forEach(x=>x.open=false)});
 (async()=>{const hash=new URLSearchParams(location.hash.slice(1));if(hash.has('request')){try{await loadTracking(hash.get('request'))}catch(e){showMessage(e.message)}return;}if(hash.has('access_token')){session={access_token:hash.get('access_token'),refresh_token:hash.get('refresh_token')};sessionStorage.setItem('tree_session',JSON.stringify(session));history.replaceState(null,'',location.pathname+location.search)}try{await refresh();navigate(invite?'join':session?'tree':'home');if(new URL(location.href).searchParams.get('setup_done')==='1'){navigate('admin');showMessage('تم إنشاء حساب المسؤول. ادخل باسم المستخدم admin وكلمة المرور التي اخترتها.');history.replaceState(null,'',location.pathname)}}catch(e){showMessage(e.message)}})();
