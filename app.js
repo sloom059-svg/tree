@@ -1,4 +1,8 @@
-const API='https://nryvvojfzablnfdqyzfy.supabase.co', KEY='sb_publishable_apDLGojBeRvTO1l53NxRHQ_PvzS9ig9', OWNER='sloom05888@gmail.com';
+const API='https://vzlovxpfmpyisrvqtsnd.supabase.co', KEY='sb_publishable_IOPnpiXSeijOTUEgqjLurw_NyZHkkAz', OWNER='sloom05888@gmail.com';
+// Do not reuse sessions or invitation tokens from the previous Supabase project.
+if(sessionStorage.getItem('tree_supabase_ref')!=='vzlovxpfmpyisrvqtsnd'){
+  sessionStorage.removeItem('tree_session');sessionStorage.removeItem('tree_invite');sessionStorage.setItem('tree_supabase_ref','vzlovxpfmpyisrvqtsnd');
+}
 const $=s=>document.querySelector(s); let invite=new URLSearchParams(location.hash.slice(1)).get('i')||new URLSearchParams(location.hash.slice(1)).get('invite')||new URL(location.href).searchParams.get('invite')||sessionStorage.getItem('tree_invite')||'', session=JSON.parse(sessionStorage.getItem('tree_session')||'null'), people=[],requests=[], invitation='', autoMode=false;
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
 function personLabel(p){const parent=people.find(x=>x.id===p.parent_id);const grand=parent&&people.find(x=>x.id===parent.parent_id);return p.name+(parent?' — الأب: '+parent.name:'')+(grand?'، الجد: '+grand.name:'')}
