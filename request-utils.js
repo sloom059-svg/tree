@@ -21,10 +21,21 @@
     const date=new Date(iso);if(!iso||Number.isNaN(date.valueOf()))return{date:'غير متاح',time:''};
     return{date:new Intl.DateTimeFormat('ar-SA-u-ca-gregory',{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Riyadh'}).format(date),time:new Intl.DateTimeFormat('ar-SA',{hour:'numeric',minute:'2-digit',timeZone:'Asia/Riyadh'}).format(date)};
   }
+  function ancestry(person,people,max=30){
+    const index=new Map(people.map(p=>[String(p.id),p])),names=[],seen=new Set();
+    let current=person;
+    while(current&&names.length<max&&!seen.has(String(current.id))){
+      seen.add(String(current.id));names.push(String(current.name||'').trim());
+      current=current.parent_id?index.get(String(current.parent_id)):null;
+    }
+    return names.filter(Boolean);
+  }
+  const fullName=(person,people)=>ancestry(person,people).join(' بن ');
+  const childFullName=(name,parent,people)=>[String(name||'').trim(),...(parent?ancestry(parent,people):[])].filter(Boolean).join(' بن ');
   function lineage(person,people){const parent=people.find(p=>p.id===person?.parent_id),grandparent=people.find(p=>p.id===parent?.parent_id);return{person:person||null,parent:parent||null,grandparent:grandparent||null};}
   function findPeople(people,query,grandparentId=''){
     const terms=normalize(query).split(/\s+/).filter(term=>term&&term!=='بن'&&term!=='ابن');
-    return people.filter(person=>{if(grandparentId&&person.parent_id!==grandparentId)return false;const family=lineage(person,people);const text=normalize([person.name,family.parent?.name,family.grandparent?.name].filter(Boolean).join(' '));return terms.every(t=>text.includes(t));});
+    return people.filter(person=>{if(grandparentId&&person.parent_id!==grandparentId)return false;const text=normalize(fullName(person,people));return terms.every(t=>text.includes(t));});
   }
-  return{normalize,namesFromRequest,validateNames,dateParts,lineage,findPeople,phoneDigits,escapeHTML,inviteLink,unreadNotifications};
+  return{ancestry,fullName,childFullName,normalize,namesFromRequest,validateNames,dateParts,lineage,findPeople,phoneDigits,escapeHTML,inviteLink,unreadNotifications};
 });
