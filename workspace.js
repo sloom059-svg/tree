@@ -10,6 +10,8 @@
     trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',
     home:'<path d="m3 10 9-7 9 7v11H3zM9 21v-8h6v8"/>',
     user:'<circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+    bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+    logout:'<path d="M9 4H4v16h5M10 12h11M17 8l4 4-4 4"/>',
     menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
     search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
     expand:'<path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/>',
@@ -64,9 +66,15 @@
   window.addEventListener('tree:render',e=>{
     isAdmin=e.detail.isAdmin;
     document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
-    const badge=$('#requestsBadge'),count=e.detail.pending;
-    badge.textContent=count>99?'99+':String(count);badge.classList.toggle('hidden',!isAdmin||count===0);
-    badge.setAttribute('aria-label',`${count} طلبات إضافة بانتظار المراجعة`);
+    const count=e.detail.pending;
+    for(const selector of ['#requestsBadge','#notificationBadge']){
+      const badge=$(selector);badge.textContent=count>99?'99+':String(count);
+      badge.classList.toggle('hidden',!isAdmin||count===0);
+      badge.setAttribute('aria-label',`${count} طلبات إضافة بانتظار المراجعة`);
+    }
+    const notificationLabel=count?'الإشعارات، '+count+' طلبات إضافة بانتظار المراجعة':'الإشعارات، لا توجد طلبات بانتظار المراجعة';
+    $('#sidebarNotifications').setAttribute('aria-label',notificationLabel);
+    $('#sidebarNotifications').setAttribute('title',notificationLabel);
     $('#accountLabel').textContent=isAdmin?'حساب المسؤول':'دخول المسؤول';
     $('#treeCountLabel').textContent=e.detail.hasAccess?e.detail.count+' أفراد في شجرة العائلة':'أسماء تجمعنا، وصلات تحفظ حكايتنا';
     $('#workspaceEmpty').classList.toggle('hidden',e.detail.count>0);
@@ -135,6 +143,7 @@
   function closeSidebar(){$('#appSidebar').classList.remove('open');$('#sidebarScrim').classList.add('hidden');$('#sidebarToggle').setAttribute('aria-expanded','false');}
   $('#sidebarToggle').onclick=()=>{const open=$('#appSidebar').classList.toggle('open');$('#sidebarScrim').classList.toggle('hidden',!open);$('#sidebarToggle').setAttribute('aria-expanded',String(open));};
   $('#sidebarScrim').onclick=closeSidebar;
+  $('#sidebarLogout').onclick=()=>{closeSidebar();$('#logout').click();navigate('home');showMessage('تم تسجيل الخروج.');};
   $('#sidebarTrash').onclick=()=>{closeSidebar();showTrash().catch(e=>showMessage(e.message));};
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar();});
   document.addEventListener('click',e=>{
