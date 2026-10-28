@@ -115,3 +115,28 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .share-mail{background:#fff3e9!important;border-color:#fae9d9}.share-mail img{filter:invert(50%) sepia(48%) saturate(680%) hue-rotate(343deg)}
 .share-more{background:#eef1f9!important;border-color:#e2e7f2}.share-more img{filter:invert(39%) sepia(15%) saturate(1237%) hue-rotate(187deg)}
 @media(max-width:480px){.share-service-icon{width:47px;height:47px;border-radius:14px}.share-service-icon img{width:25px;height:25px}}
+
+/* Refined notification counters — preserve full circles and center digits */
+.app-sidebar .request-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:auto;min-width:22px;height:22px;min-height:22px;
+  padding:0 6px;box-sizing:border-box;
+  flex:none;vertical-align:middle;
+  border-radius:999px;background:#df3445;color:#fff;
+  font-family:Tajawal,system-ui,sans-serif;font-size:12px;font-weight:700;
+  line-height:22px;letter-spacing:0;font-variant-numeric:tabular-nums;
+  box-shadow:0 2px 5px rgba(172,34,54,.15);
+  transform:none;white-space:nowrap;
+}
+.app-sidebar #requestsBadge{margin-inline-start:auto}
+.app-sidebar .sidebar-notifications{overflow:visible;isolation:isolate}
+.app-sidebar .sidebar-notifications #notificationBadge{
+  position:absolute;inset:auto;
+  top:-7px;right:-7px;z-index:3;
+  min-width:20px;width:auto;height:20px;min-height:20px;
+  padding:0 5px;box-sizing:border-box;
+  border:2px solid #fff;border-radius:999px;
+  font-size:10px;font-weight:800;line-height:16px;
+  box-shadow:0 2px 5px rgba(172,34,54,.18);
+  pointer-events:none;
+}
