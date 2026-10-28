@@ -52,3 +52,7 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .account-password-dialog input:focus{outline:2px solid #92c69d}
 .account-password-dialog .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .account-password-dialog .form-error{color:#b53535}
+
+.sidebar-bottom-row #sidebarAccount .account-chevron{font-size:17px;line-height:1;margin-right:auto;color:#70806f;transition:transform .18s ease}
+.sidebar-bottom-row #sidebarAccount[aria-expanded="true"] .account-chevron{transform:rotate(180deg)}
+.sidebar-bottom-row .sidebar-admin-actions{gap:0}
