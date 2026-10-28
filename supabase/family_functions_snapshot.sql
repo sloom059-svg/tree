@@ -46,7 +46,9 @@ CREATE OR REPLACE FUNCTION family_private.is_admin()
  LANGUAGE sql
  STABLE SECURITY DEFINER
  SET search_path TO ''
-AS $function$ select exists(select 1 from auth.users u where u.id = (select auth.uid()) and lower(u.email)='sloom05888@gmail.com' and u.email_confirmed_at is not null) $function$
+AS $function$
+ select exists(select 1 from family_private.settings s join auth.users u on u.id=s.admin_uid where s.id=true and u.id=(select auth.uid()) and u.email_confirmed_at is not null)
+$function$
 ;
 
 CREATE OR REPLACE FUNCTION family_private.my_family_invite()
