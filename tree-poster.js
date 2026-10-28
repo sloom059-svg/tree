@@ -48,22 +48,44 @@
     const leaves=positioned.map((n,i)=>{
       const x=xOf(n),y=yOf(n),name=escapeXml(cropName(n.name));
       const root=n.depth===0,scale=root?1.11:1;
-      return `<g transform="translate(${x} ${y}) scale(${scale})"><path d="M -104 0 Q -70 -46, 0 -30 Q 69 -45,104 0 Q 70 44,0 31 Q -70 44,-104 0 Z" fill="url(#leaf)" stroke="#527d46" stroke-width="2"/><path d="M -94 0 Q 0 9,94 0" stroke="#80a86e" stroke-width="1.5" fill="none"/><path d="M -83 -5 Q -45 -27,-14 -19 M 20 -22 Q 65 -28,86 -5" stroke="#ffffff" stroke-opacity=".45" stroke-width="2" fill="none"/><text x="0" y="6" text-anchor="middle" font-family="Tahoma, Arial, sans-serif" font-size="${n.name.length>24?13:16}" font-weight="${root?'700':'600'}" fill="#273d25" direction="rtl" unicode-bidi="plaintext">${name}</text></g>`;
+      return `<g transform="translate(${x} ${y}) scale(${scale})">
+        <path d="M -102 22 C -94 -48,-8 -68,105 -28 C 92 29,19 67,-102 22 Z" fill="url(#leaf)" stroke="#527d46" stroke-width="2.2"/>
+        <path d="M -95 20 Q 6 -1,99 -28" fill="none" stroke="#6c9963" stroke-width="2"/>
+        <path d="M -46 7 Q -35 -22,-17 -34 M -3 -4 Q 11 -30,35 -37 M 33 -13 Q 50 8,56 20 M -35 6 Q -21 29,5 34" fill="none" stroke="#84ac77" stroke-width="1.5"/>
+        <text x="0" y="8" text-anchor="middle" font-family="Tahoma, Arial, sans-serif" font-size="${n.name.length>24?13:16}" font-weight="${root?'700':'600'}" fill="#203522" direction="rtl" unicode-bidi="plaintext">${name}</text></g>`;
     }).join('');
     const border=`<rect x="24" y="24" width="${totalW-48}" height="${totalH-48}" rx="26" fill="none" stroke="#c7b991" stroke-width="3"/><rect x="35" y="35" width="${totalW-70}" height="${totalH-70}" rx="18" fill="none" stroke="#ddcfab" stroke-width="1.5"/>`;
     const title=`<text x="${totalW/2}" y="88" text-anchor="middle" font-family="Tahoma,Arial,sans-serif" font-size="42" font-weight="700" fill="#4f5834">شجرة عائلة الجارالله</text><text x="${totalW/2}" y="122" text-anchor="middle" font-family="Tahoma,Arial,sans-serif" font-size="19" fill="#79815d">جذور راسخة وأغصان تمتد للأجيال</text>`;
     const footer=`<text x="${totalW/2}" y="${totalH-70}" text-anchor="middle" font-family="Tahoma,Arial,sans-serif" font-size="15" fill="#80765e">${positioned.length} اسمًا · يمتد النسب من الجذور أسفل الشجرة إلى الأجيال في الأعلى</text>`;
     return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">${defs}<rect width="100%" height="100%" fill="url(#paper)"/>${border}${title}${trunks}${branches}${leaves}${footer}</svg>`;
   }
+  const preview=document.getElementById('botanicalPreview');
+  const previewFrame=document.getElementById('botanicalPreviewFrame');
+  const download=document.getElementById('botanicalDownload');
+  const close=document.getElementById('botanicalClose');
+  let preparedSvg='';
   button.addEventListener('click',()=>{
     try{
-      if(!session||!invitation){showMessage('سجل دخول المسؤول لتصدير الشجرة.');return;}
-      if(!people.length){showMessage('أضف أسماء إلى الشجرة أولًا، ثم جرّب التصدير.');return;}
-      const svg=makePoster(people);
-      const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
-      const anchor=document.createElement('a');anchor.href=url;anchor.download='aljarallah-botanical-family-tree.svg';
-      document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
-      showMessage('تم تجهيز رسم الشجرة. الملف بصيغة SVG ويمكن تكبيره وطباعته دون فقدان الجودة.',4500);
-    }catch(error){showMessage('تعذر رسم الشجرة: '+error.message);}
+      if(!session||!invitation){showMessage('سجل دخول المسؤول لعرض الشجرة.');return;}
+      if(!people.length){showMessage('أضف أسماء إلى الشجرة أولًا، ثم جرّب المعاينة.');return;}
+      preparedSvg=makePoster(people);
+      previewFrame.replaceChildren();
+      const doc=new DOMParser().parseFromString(preparedSvg,'image/svg+xml');
+      const svg=document.importNode(doc.documentElement,true);
+      svg.removeAttribute('width');svg.removeAttribute('height');
+      svg.style.width='100%';svg.style.height='100%';
+      previewFrame.appendChild(svg);
+      preview.showModal();
+    }catch(error){showMessage('تعذر عرض الشجرة: '+error.message);}
+  });
+  close.addEventListener('click',()=>preview.close());
+  preview.addEventListener('close',()=>{preparedSvg='';previewFrame.replaceChildren();});
+  download.addEventListener('click',()=>{
+    if(!preparedSvg)return;
+    const url=URL.createObjectURL(new Blob([preparedSvg],{type:'image/svg+xml;charset=utf-8'}));
+    const anchor=document.createElement('a');anchor.href=url;anchor.download='aljarallah-botanical-family-tree.svg';
+    document.body.appendChild(anchor);anchor.click();anchor.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    preview.close();showMessage('تم تنزيل الشجرة بصيغة SVG عالية الجودة.',3500);
   });
 })();
