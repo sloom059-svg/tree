@@ -57,7 +57,7 @@
   function addName(kind){const values=rowValues(kind);if(values.length>=50)return;values.push('');paintRows(kind,values);$('#'+kind+'Name'+(values.length-1)).focus();}
   function approvalSummary(){
     const parent=family($('#reviewParent').value),count=rowValues('review').filter(x=>x.trim()).length;
-    $('#reviewApprovalSummary').innerHTML=parent.person?`عند الاعتماد ستُضاف <b>${count} أسماء</b> كأبناء لـ <b>${html(parent.person.name)}</b>${parent.parent?'، والجد هو <b>'+html(parent.parent.name)+'</b>':''}.`:'اختر الأب الصحيح أولًا. لن تُضاف الأسماء إلى الشجرة عند حفظ التعديلات فقط.';
+    $('#reviewApprovalSummary').innerHTML=parent.person?`<b>الأسماء الكاملة عند الاعتماد:</b><div class="full-names-preview">${fullNameTags(rowValues('review'),parent.person)}</div><small>ستُضاف ${count} أسماء كأبناء لـ ${html(U.fullName(parent.person,people))}.</small>`:'اختر الأب الصحيح أولًا لعرض الأسماء الكاملة. لن تُضاف الأسماء للشجرة عند حفظ التعديلات فقط.';
   }
   function openReview(id){
     const request=requests.find(r=>r.id===id&&r.status==='pending');if(!request){showMessage('هذا الطلب لم يعد بانتظار المراجعة. حدّث الصفحة.');return;}
