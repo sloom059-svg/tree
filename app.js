@@ -36,67 +36,40 @@ $('#rootForm').addEventListener('submit',async e=>{e.preventDefault();try{await 
 let lastSender='',lastPhone='',receiptToken='',actionPerson=null,sortIds=[];
 function showReceipt(data,token){receiptToken=token;history.replaceState(null,'',location.pathname+location.search+'#request='+encodeURIComponent(token));navigate('receipt');$('#receiptTree').classList.toggle('hidden',!invite&&!session);$('#sendAnother').disabled=false;$('#shareFamily').disabled=false;$('#receiptParent').textContent='الشخص المختار: '+(data.parent_name||'بانتظار تحديد الأب');$('#receiptDate').textContent=new Date(data.created_at).toLocaleString('ar-SA');const status=data.status;$('#receiptSummary').textContent=status==='approved'?'تم اعتماد الأسماء وإضافتها إلى الشجرة.':status==='rejected'?'راجع مسؤول العائلة طلبك ولم يُعتمده.':'وصل طلبك إلى مسؤول العائلة للمراجعة.';$('#receiptStatus').textContent={approved:'تم اعتماد الطلب',rejected:'لم يُعتمد الطلب',pending:'بانتظار مراجعة مسؤول العائلة'}[status]||status;$('#receiptStatusDetail').textContent=status==='pending'?'قد يتواصل معك المسؤول إذا احتاج إلى توضيح.':status==='approved'?'يمكنك الاطلاع على الأسماء في الشجرة.':'يمكنك إرسال طلب جديد ببيانات مصححة.';$('#receiptNames').textContent='الأسماء المرسلة: '+(data.names||[]).join('، ');$('#trackingLink').value=location.origin+location.pathname+'#request='+encodeURIComponent(token);}
 async function loadTracking(token){if(invite||session)await refresh();const data=await api('/rest/v1/rpc/family_track_request',{method:'POST',body:{p_token:token}});if(!data)throw Error('رابط متابعة الطلب غير صالح.');showReceipt(data,token)}
-$('#copyTracking').onclick=async()=>{try{await navigator.clipboard.writeText($('#trackingLink').value);showMessage('تم نسخ رابط المتابعة.')}catch{showMessage('حدد رابط المتابعة وانسخه.')}};$('#refreshTracking').onclick=()=>loadTracking(receiptToken).catch(e=>showMessage(e.message));const shareDialog=$('#familyShareDialog');
+$('#copyTracking').onclick=async()=>{try{await navigator.clipboard.writeText($('#trackingLink').value);showMessage('تم نسخ رابط المتابعة.')}catch{showMessage('حدد رابط المتابعة وانسخه.')}};$('#refreshTracking').onclick=()=>loadTracking(receiptToken).catch(e=>showMessage(e.message));const FAMILY_SHARED_INVITE='vPzbK_u9uZ4hs9WJ';
+const shareDialog=$('#familyShareDialog');
+function shareInviteCode(){return invite||FAMILY_SHARED_INVITE;}
 function showFamilyShare(){
- const available=!!invite;
- $('#familyShareInviteEntry').classList.toggle('hidden',available);
- $('#familyInviteError').textContent='';
+ const code=shareInviteCode();
+ const url=FamilyRequestUtils.inviteLink(code);
+ $('#familyShareUrl').value=url;
  $('#familyShareFeedback').textContent='';
- $('#familyShareUrl').closest('.family-share-link').classList.toggle('hidden',!available);
- $('#familyShareUrl').previousElementSibling?.classList?.toggle('hidden',!available);
- $('#familyShareUrl').value=available?FamilyRequestUtils.inviteLink(invite):'';
- const url=$('#familyShareUrl').value;
  const message='ساهم في إضافة أسماء العائلة إلى شجرة الجارالله';
  $('#shareWhatsapp').href='https://wa.me/?text='+encodeURIComponent(message+'\n'+url);
  $('#shareTelegram').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(message);
  $('#shareEmail').href='mailto:?subject='+encodeURIComponent('دعوة للمشاركة في شجرة الجارالله')+'&body='+encodeURIComponent(message+'\n'+url);
- $('#familyShareDialog').classList.toggle('share-needs-invite',!available);
  shareDialog.showModal();
 }
-async function verifyFamilyInvite(input){
- let code=input.trim();
- if(!code)throw Error('ألصق رابط الدعوة أولًا.');
- if(/^https?:\/\//i.test(code)){
-  const url=new URL(code);
-  if(!['aljarallah.vercel.app','shajarat-alaila-preview.vercel.app'].includes(url.hostname))throw Error('استخدم رابط دعوة عائلة الجارالله.');
-  const params=new URLSearchParams(url.hash.slice(1));
-  code=params.get('i')||params.get('invite')||url.searchParams.get('invite')||'';
- }
- if(!code||code.includes('/')||code.length>150)throw Error('الرابط المدخل ليس رابط دعوة صالحًا.');
- const original=invite;
- invite=code;
- try{
-  const canonical=await api('/rest/v1/rpc/family_short_invite',{method:'POST',body:{}});
-  if(!canonical)throw Error('رابط الدعوة غير صالح.');
-  invite=canonical;
-  sessionStorage.setItem('tree_invite',invite);
-  await refresh();
-  return true;
- }catch(error){invite=original;throw error;}
-}
-$('#verifyFamilyInvite').onclick=async()=>{
- const button=$('#verifyFamilyInvite');button.disabled=true;
- try{await verifyFamilyInvite($('#familyInviteInput').value);shareDialog.close();showFamilyShare();}
- catch(error){$('#familyInviteError').textContent=error.message||'تعذر التحقق من الدعوة.';}
- finally{button.disabled=false;}
-};
 $('#closeFamilyShare').onclick=()=>shareDialog.close();
 $('#copyFamilyShare').onclick=async()=>{
- try{await navigator.clipboard.writeText($('#familyShareUrl').value);$('#familyShareFeedback').textContent='تم نسخ رابط الدعوة.';}
- catch{$('#familyShareUrl').focus();$('#familyShareUrl').select();$('#familyShareFeedback').textContent='حدد الرابط وانسخه من الخانة أعلاه.';}
+ const input=$('#familyShareUrl');
+ try{await navigator.clipboard.writeText(input.value);$('#familyShareFeedback').textContent='تم نسخ رابط الدعوة.';}
+ catch{input.focus();input.select();$('#familyShareFeedback').textContent='حدد الرابط وانسخه من الخانة أعلاه.';}
 };
 $('#shareOther').onclick=async()=>{
  const url=$('#familyShareUrl').value;
  try{
   if(navigator.share)await navigator.share({title:'دعوة للمشاركة في شجرة الجارالله',url});
-  else await navigator.clipboard.writeText(url);
+  else{await navigator.clipboard.writeText(url);$('#familyShareFeedback').textContent='تم نسخ رابط الدعوة.';}
  }catch(error){if(error?.name!=='AbortError')$('#familyShareFeedback').textContent='اختر واتساب أو تليجرام أو انسخ الرابط.';}
 };
-$('#shareWhatsapp').onclick=e=>{if(!invite)e.preventDefault();};
-$('#shareTelegram').onclick=e=>{if(!invite)e.preventDefault();};
-$('#shareEmail').onclick=e=>{if(!invite)e.preventDefault();};
-$('#sendAnother').onclick=()=>{
- if(!invite){showFamilyShare();return;}
+$('#sendAnother').onclick=async()=>{
+ if(!invite){
+  invite=FAMILY_SHARED_INVITE;
+  sessionStorage.setItem('tree_invite',invite);
+  try{await refresh();}
+  catch(error){showMessage('تعذر فتح نموذج الدعوة: '+error.message);return;}
+ }
  history.replaceState(null,'',location.pathname+location.search);
  navigate('join');$('#sender').value=lastSender;$('#phone').value=lastPhone;
 };
