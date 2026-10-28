@@ -14,3 +14,6 @@ body[data-view=receipt] .wrap{max-width:none;padding:0}body[data-view=receipt] #
 @media(max-width:650px){.receipt-card{margin:-65px 14px 0;padding:17px}.receipt-banner{padding:35px 20px 95px}.receipt-banner h1{font-size:30px}.receipt-steps>span{font-size:11px}.receipt-steps{gap:3px}.receipt-title{padding-top:8px}.receipt-columns{gap:22px}.receipt-box{padding:16px}.person-menu [role=menu]{inset-inline-end:0}}
 
 .person-menu [role=menu] button{display:flex;align-items:center;gap:10px;color:#56675b;font-size:15px}.person-menu [role=menu] svg{width:19px;height:19px;flex:none}.person-menu.menu-up [role=menu]{top:auto;bottom:36px}
+
+/* Multiple children in the add-relative dialog */
+#relativeNameRows{display:grid;gap:10px}#relativeNameRows .relative-extra-row{display:flex;align-items:center;gap:8px}#relativeNameRows .relative-extra-row input{flex:1;min-width:0}.relative-add-another{display:block;background:#f0f7f0;color:#187544;border:1px dashed #adcdb5;border-radius:9px;margin-top:12px;padding:10px 15px;font-weight:600;font-size:14px}.relative-add-another[hidden]{display:none}.relative-remove-name{background:#fff0f0;border:1px solid #edd6d6;border-radius:8px;color:#a33;width:37px;height:37px;flex-shrink:0}
