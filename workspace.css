@@ -33,3 +33,5 @@ body[data-view=receipt] .wrap{margin-left:var(--sidebar-width);padding:0}body[da
 .sidebar-nav .nav-item svg{width:19px;height:19px;stroke-width:1.8}
 .sidebar-nav .nav-item.active{background:#eaf5ec;color:#147646;font-weight:600}
 .sidebar-nav .visitor-only.hidden{display:none!important}
+
+.header-family-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border-radius:9px;background:#eaf5ec;color:#16864b}.header-family-icon svg{width:19px;height:19px}.header-title{gap:10px}#pageTitle{font-weight:600}@media(max-width:380px){.header-family-icon{width:27px;height:27px}.header-title{gap:7px}#pageTitle{font-size:13px}}
