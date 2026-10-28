@@ -111,8 +111,8 @@
     try{
       validateParent();const names=U.validateNames(syncNames('join'));
       const sender=$('#sender').value.trim(),phone=$('#phone').value.trim();
-      if(!sender)throw Error('اكتب اسمك الرباعي في خانة «بياناتك أنت».');
-      if(sender.split(/\s+/).length<4)throw Error('اكتب اسمك الرباعي: اسمك، اسم والدك، اسم جدك، واسم العائلة.');
+      if(!sender)throw Error('اكتب اسمك الثلاثي في خانة «بياناتك أنت».');
+      if(sender.split(/\s+/).length<3)throw Error('اكتب اسمك الثلاثي: اسمك، اسم والدك، واسم جدك.');
       const digits=U.phoneDigits(phone);
       if(digits.length<8||digits.length>15)throw Error('اكتب رقم جوال صحيحًا حتى يستطيع المسؤول التواصل معك.');
       button.disabled=true;button.textContent='جارٍ إرسال الطلب…';lastSender=sender;lastPhone=phone;
