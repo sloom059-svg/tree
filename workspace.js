@@ -60,7 +60,7 @@
   window.addEventListener('tree:navigate',e=>{
     closeSidebar();closeNotifications();
     document.querySelectorAll('.sidebar-nav [data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===e.detail&&!b.dataset.adminSection));
-    $('#pageTitle').textContent={tree:'شجرة الجارالله',admin:'إدارة العائلة',join:'ساهم في الشجرة',home:'عائلة الجارالله',receipt:'متابعة الطلب'}[e.detail]||'شجرة الجارالله';
+    $('#pageTitle').textContent={tree:'شجرة عائلة الجارالله',admin:'إدارة العائلة',join:'ساهم في الشجرة',home:'عائلة الجارالله',receipt:'متابعة الطلب'}[e.detail]||'شجرة عائلة الجارالله';
     if(e.detail==='tree')scheduleLayout();
   });
   window.addEventListener('tree:render',e=>{
