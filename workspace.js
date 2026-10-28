@@ -66,6 +66,7 @@
   window.addEventListener('tree:render',e=>{
     isAdmin=e.detail.isAdmin;
     document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
+    document.querySelectorAll('.visitor-only').forEach(el=>el.classList.toggle('hidden',isAdmin));
     const count=e.detail.pending;
     const badge=$('#requestsBadge');badge.textContent=count>99?'99+':String(count);
     badge.classList.toggle('hidden',!isAdmin||count===0);
