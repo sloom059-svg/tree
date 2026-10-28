@@ -72,7 +72,8 @@
     badge.classList.toggle('hidden',!isAdmin||count===0);
     badge.setAttribute('aria-label',`${count} طلبات إضافة بانتظار المراجعة`);
     renderNotifications();
-    $('#accountLabel').textContent=isAdmin?'حساب المسؤول':'دخول المسؤول';
+    $('#accountLabel').textContent=isAdmin?'المسؤول':'دخول المسؤول';
+    if(!isAdmin){accountMenu.classList.add('hidden');accountButton.setAttribute('aria-expanded','false');}
     $('#treeCountLabel').textContent=e.detail.hasAccess?e.detail.count+' أفراد في شجرة العائلة':'أسماء تجمعنا، وصلات تحفظ حكايتنا';
     $('#workspaceEmpty').classList.toggle('hidden',e.detail.count>0);
     $('#workspaceEmptyText').textContent=e.detail.hasAccess?'ابدأ بإضافة الجد أو بداية فرع من لوحة الإدارة.':'افتح رابط الدعوة أو سجل دخول المسؤول لعرض الشجرة.';
@@ -177,7 +178,35 @@
   function closeSidebar(){$('#appSidebar').classList.remove('open');$('#sidebarScrim').classList.add('hidden');$('#sidebarToggle').setAttribute('aria-expanded','false');}
   $('#sidebarToggle').onclick=()=>{const open=$('#appSidebar').classList.toggle('open');$('#sidebarScrim').classList.toggle('hidden',!open);$('#sidebarToggle').setAttribute('aria-expanded',String(open));};
   $('#sidebarScrim').onclick=closeSidebar;
-  $('#sidebarLogout').onclick=()=>{closeSidebar();$('#logout').click();navigate('home');showMessage('تم تسجيل الخروج.');};
+  const accountButton=$('#sidebarAccount'),accountMenu=$('#accountMenu'),passwordDialog=$('#changePasswordDialog');
+  const closeAccountMenu=()=>{accountMenu.classList.add('hidden');accountButton.setAttribute('aria-expanded','false');};
+  accountButton.addEventListener('click',()=>{
+    if(!isAdmin){closeAccountMenu();navigate('admin');return;}
+    const willOpen=accountMenu.classList.contains('hidden');
+    accountMenu.classList.toggle('hidden',!willOpen);
+    accountButton.setAttribute('aria-expanded',String(willOpen));
+  });
+  const doAccountLogout=()=>{closeAccountMenu();closeSidebar();$('#logout').click();navigate('home');showMessage('تم تسجيل الخروج.');};
+  $('#accountLogoutAction').onclick=doAccountLogout;
+  $('#changePasswordAction').onclick=()=>{closeAccountMenu();$('#changePasswordForm').reset();$('#changePasswordError').classList.add('hidden');passwordDialog.showModal();};
+  $('#cancelPasswordChange').onclick=()=>passwordDialog.close();
+  document.addEventListener('click',e=>{if(!accountMenu.contains(e.target)&&!accountButton.contains(e.target))closeAccountMenu();});
+  $('#changePasswordForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const old=$('#currentPassword').value, next=$('#newPassword').value,confirm=$('#confirmNewPassword').value;
+    const error=$('#changePasswordError'),submit=$('#saveNewPassword');
+    error.classList.add('hidden');
+    if(next!==confirm||next.length<6||next===old){error.textContent='تأكد من تطابق كلمة المرور الجديدة واختلافها عن الحالية، وأنها 6 أحرف على الأقل.';error.classList.remove('hidden');return;}
+    submit.disabled=true;
+    try{
+      const login=await api('/auth/v1/token?grant_type=password',{method:'POST',body:{email:OWNER,password:old}});
+      if(!login.access_token)throw Error('كلمة المرور الحالية غير صحيحة');
+      const response=await fetch(API+'/auth/v1/user',{method:'PUT',headers:{apikey:KEY,Authorization:'Bearer '+login.access_token,'Content-Type':'application/json'},body:JSON.stringify({password:next})});
+      if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(data.msg||data.message||'تعذر تغيير كلمة المرور');}
+      passwordDialog.close();$('#changePasswordForm').reset();doAccountLogout();showMessage('تم تغيير كلمة المرور. سجّل الدخول بكلمة المرور الجديدة.');
+    }catch(err){error.textContent=err.message==='Invalid login credentials'?'كلمة المرور الحالية غير صحيحة':err.message;error.classList.remove('hidden');}
+    finally{submit.disabled=false;}
+  });
   $('#sidebarTrash').onclick=()=>{closeSidebar();showTrash().catch(e=>showMessage(e.message));};
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar();});
   document.addEventListener('click',e=>{
