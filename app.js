@@ -22,9 +22,36 @@ function renderTree(isAdmin){const signature=JSON.stringify([isAdmin,people]);if
  $('#treeView').innerHTML=roots.length?`<div class="tree-forest">${roots.map(branch).join('')}</div>`:'<div class="tree-empty">لم تبدأ الشجرة بعد. أضف الجد الأول من لوحة الإدارة.</div>';window.dispatchEvent(new CustomEvent('tree:layout'));}
 function showRelative(id){selectedPerson=people.find(p=>p.id===id);if(!selectedPerson)return;$('#personDialog').open&&$('#personDialog').close();$('#relativeCenter').textContent=selectedPerson.name;$('#relativeSubtitle').textContent='اختر العلاقة حول '+selectedPerson.name;const sib=$('[data-relative="sibling"]');sib.disabled=!selectedPerson.parent_id;$('#relativeHint').textContent=sib.disabled?'لإضافة أخ، أضف الأب أولًا.':'';$('#relativeDialog').showModal()}
 function showPerson(id){const p=people.find(x=>x.id===id);if(!p)return;selectedPerson=p;const parent=people.find(x=>x.id===p.parent_id),children=people.filter(x=>x.parent_id===p.id);$('#personName').textContent=p.name;$('#personDetails').innerHTML=`<p><b>الوالد:</b> ${esc(parent?.name||'غير محدد')}</p><p><b>الأبناء:</b> ${children.length?children.map(x=>esc(x.name)).join('، '):'لا يوجد'}</p>`;$('#personAdd').classList.toggle('hidden',!(session&&invitation));$('#personDialog').showModal()}
-document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.dataset.addPerson)showRelative(btn.dataset.addPerson);if(btn.dataset.viewPerson)showPerson(btn.dataset.viewPerson);if(btn.dataset.close)$('#'+btn.dataset.close).close();if(btn.dataset.relative){selectedRelation=btn.dataset.relative;const label={parent:'أب',sibling:'أخ',child:'ابن'}[selectedRelation];$('#relativeDialog').close();$('#addRelativeTitle').textContent='إضافة '+label;$('#addRelativeSubtitle').textContent='بالنسبة إلى '+selectedPerson.name;$('#relativeForm').reset();$('#relativeError').textContent='';$('#addRelativeDialog').showModal();}});
+document.addEventListener('click',e=>{const btn=e.target.closest('button');if(!btn)return;if(btn.dataset.addPerson)showRelative(btn.dataset.addPerson);if(btn.dataset.viewPerson)showPerson(btn.dataset.viewPerson);if(btn.dataset.close)$('#'+btn.dataset.close).close();if(btn.dataset.relative){selectedRelation=btn.dataset.relative;const label={parent:'أب',sibling:'أخ',child:'ابن'}[selectedRelation];$('#relativeDialog').close();$('#addRelativeTitle').textContent='إضافة '+label;$('#addRelativeSubtitle').textContent='بالنسبة إلى '+selectedPerson.name;$('#relativeForm').reset();$('#relativeNameRows').innerHTML='<input id="relativeName" maxlength="100" required placeholder="اكتب الاسم">';$('#addAnotherRelative').hidden=selectedRelation!=='child';$('#relativeError').textContent='';$('#addRelativeDialog').showModal();}});
 $('#personAdd').onclick=()=>{if(selectedPerson)showRelative(selectedPerson.id)};
-$('#relativeForm').addEventListener('submit',async e=>{e.preventDefault();const button=$('#relativeSubmit');button.disabled=true;$('#relativeError').textContent='';try{await api('/rest/v1/rpc/family_add_relative',{method:'POST',admin:true,body:{p_person_id:selectedPerson.id,p_relation:selectedRelation,p_name:$('#relativeName').value.trim(),p_gender:'male'}});$('#addRelativeDialog').close();await refresh();showMessage('تمت إضافة الفرد للشجرة.')}catch(error){$('#relativeError').textContent=error.message==='add parent first'?'أضف الوالد أولًا.':error.message}finally{button.disabled=false}});
+$('#addAnotherRelative').onclick=()=>{
+ const root=$('#relativeNameRows');
+ if(root.querySelectorAll('input').length>=50)return;
+ const row=document.createElement('div');row.className='relative-extra-row';
+ const field=document.createElement('input');field.maxLength=100;field.placeholder='اكتب الاسم الآخر';field.required=true;field.setAttribute('aria-label','اسم إضافي');
+ const remove=document.createElement('button');remove.type='button';remove.className='relative-remove-name';remove.textContent='×';remove.setAttribute('aria-label','حذف هذا الاسم');remove.onclick=()=>{row.remove();$('#addAnotherRelative').disabled=false;};
+ row.append(field,remove);root.append(row);field.focus();
+ $('#addAnotherRelative').disabled=root.querySelectorAll('input').length>=50;
+};
+$('#relativeForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const button=$('#relativeSubmit');$('#relativeError').textContent='';
+ const names=[...document.querySelectorAll('#relativeNameRows input')].map(el=>el.value.trim());
+ if(names.some(n=>!n)){ $('#relativeError').textContent='اكتب جميع الأسماء أو احذف الخانات الفارغة.';return;}
+ if(new Set(names.map(n=>n.replace(/\\s+/g,' '))).size!==names.length){$('#relativeError').textContent='يوجد اسم مكرر في القائمة.';return;}
+ button.disabled=true;$('#addAnotherRelative').disabled=true;
+ let added=0;
+ try{
+  for(const name of names){
+   await api('/rest/v1/rpc/family_add_relative',{method:'POST',admin:true,body:{p_person_id:selectedPerson.id,p_relation:selectedRelation,p_name:name,p_gender:'male'}});
+   added++;
+  }
+  $('#addRelativeDialog').close();await refresh();showMessage(added===1?'تمت إضافة الفرد للشجرة.':'تمت إضافة '+added+' أسماء للشجرة.');
+ }catch(error){
+  $('#relativeError').textContent=(error.message==='add parent first'?'أضف الوالد أولًا.':error.message)+(added?' — تمت إضافة '+added+' أسماء قبل الخطأ. حدّث الشجرة قبل إعادة المحاولة لتجنب التكرار.':'');
+  if(added)await refresh().catch(()=>{});
+ }finally{button.disabled=false;$('#addAnotherRelative').disabled=false;}
+});
 $('#treeFind').onclick=()=>{document.querySelectorAll('.tree-found').forEach(x=>x.classList.remove('tree-found'));const q=$('#treeSearch').value.trim();if(!q){$('#treeResult').textContent='';return}const found=people.find(p=>p.name.includes(q));if(!found){$('#treeResult').textContent='لم نجد هذا الاسم في الشجرة.';return}const card=document.querySelector(`[data-person="${CSS.escape(found.id)}"]`);if(card){card.classList.add('tree-found');window.dispatchEvent(new CustomEvent('tree:focus',{detail:found.id}));$('#treeResult').textContent='تم العثور على '+found.name}else $('#treeResult').textContent='لم يظهر هذا الفرد في العرض الحالي.'};
 $('#exportData').onclick=()=>{if(!session||!invitation){showMessage('سجّل دخول المسؤول لتصدير البيانات.');return}const records=people.map(p=>({id:p.id,name:p.name,father_id:p.parent_id||null,father_name:people.find(x=>x.id===p.parent_id)?.name||null}));const documentData={format:'family-tree-v1',exported_at:new Date().toISOString(),description:'أفراد الشجرة وصلات الأبوة؛ father_id يربط كل ابن بأبيه عبر id.',people:records};const blob=new Blob([JSON.stringify(documentData,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='family-tree-data.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 $('#treeSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#treeFind').click()}});
