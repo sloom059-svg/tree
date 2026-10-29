@@ -23,7 +23,7 @@ function exportTree(){
   positions.set(p.id,{x,depth});visiting.delete(p.id);completed.add(p.id);
  }
  roots.forEach(p=>place(p,0));
- const COL=184,ROW=124,NW=142,NH=52,MARGIN=68,TOP=190;
+ const COL=174,ROW=119,NW=128,NH=46,MARGIN=68,TOP=190;
  const width=Math.max(850,(Math.max(leaf,5)-1)*COL+NW+MARGIN*2);
  const height=TOP+maxDepth*ROW+NH+125;
  const offset=(width-((Math.max(leaf,1)-1)*COL+NW))/2;
@@ -40,7 +40,7 @@ function exportTree(){
   }
   const isRoot=!parent,fill=isRoot?'#164635':'#fff',stroke=isRoot?'#164635':'#cfdfd2',fg=isRoot?'#fff':'#254b3c';
   const name=escape(p.name);
-  nodes+=`<g><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/><rect x="${x+12}" y="${y+14}" width="3.5" height="24" rx="2" fill="${isRoot?'#d0b06c':'#7cae93'}"/><text x="${x+NW/2+6}" y="${y+33}" font-family="Tajawal,Arial,sans-serif" font-size="${name.length>12?15:19}" font-weight="700" fill="${fg}" text-anchor="middle" direction="rtl">${name}</text></g>`;
+  nodes+=`<g><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/><rect x="${x+12}" y="${y+12}" width="3.5" height="22" rx="2" fill="${isRoot?'#d0b06c':'#7cae93'}"/><text x="${x+NW/2+6}" y="${y+30}" font-family="Tajawal,Arial,sans-serif" font-size="${name.length>12?14:17}" font-weight="700" fill="${fg}" text-anchor="middle" direction="rtl">${name}</text></g>`;
  }
  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="شجرة عائلة الجارالله"><rect x="1" y="1" width="${width-2}" height="${height-2}" rx="22" fill="#f9faf6" stroke="#d3e0d4"/><text x="${width/2}" y="72" fill="#234b3b" font-size="40" font-weight="700" font-family="Tajawal,Arial,sans-serif" text-anchor="middle">شجرة عائلة الجارالله</text><text x="${width/2}" y="105" fill="#859988" font-size="17" font-family="Tajawal,Arial,sans-serif" text-anchor="middle">جذور تجمعنا، وأجيال تمتد</text><path d="M${width/2-95} 125h190" stroke="#c6a66f" stroke-width="2"/>${connectors}${nodes}<text x="${width/2}" y="${height-35}" fill="#829486" font-size="14" font-family="Tajawal,Arial,sans-serif" text-anchor="middle">عدد الأفراد: ${persons.length} • العلاقات وفق بيانات شجرة العائلة</text></svg>`;
  const pop=window.open('','_blank');
