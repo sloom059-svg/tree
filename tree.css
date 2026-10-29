@@ -29,13 +29,3 @@ body[data-view=receipt] .wrap{max-width:none;padding:0}body[data-view=receipt] #
 #treeView .card-actions button{font-size:11px;padding:3px 5px}
 #treeView .person-menu summary{width:22px;height:23px;line-height:21px;font-size:19px}
 
-/* Optional vector view — isolated from the classic canvas */
-#tree .vector-tree{width:100%;height:min(72vh,760px);min-height:540px;background:#f8f9fa;background-image:radial-gradient(#e5e7eb 1px,transparent 1px);background-size:20px 20px;border:2px solid #d8e1df;border-radius:12px;overflow:hidden;touch-action:none}
-#tree .vector-tree.hidden,#tree .vector-controls.hidden{display:none!important}
-#tree .vector-tree svg{display:block;touch-action:none}
-#tree .vector-node rect{filter:drop-shadow(0 3px 4px #0003)}
-#tree .vector-node:hover rect{stroke-width:3}
-#tree .vector-controls{display:flex;gap:8px;justify-content:center;padding:12px}
-#tree .vector-controls button{border:1px solid #d8e1dd;border-radius:8px;background:#fff;color:#21583e;font:inherit;padding:9px 14px}
-#toggleVectorView[aria-pressed=true]{background:#e9f4ed;border-color:#8ebaa4;color:#12633c;font-weight:700}
-@media(max-width:650px){#tree .vector-tree{min-height:480px;height:65vh}}
