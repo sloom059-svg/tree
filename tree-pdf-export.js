@@ -23,7 +23,7 @@ function exportTree(){
   positions.set(p.id,{x,depth});visiting.delete(p.id);completed.add(p.id);
  }
  roots.forEach(p=>place(p,0));
- const COL=184,ROW=124,NW=142,NH=52,MARGIN=68,TOP=190;
+ const COL=154,ROW=115,NW=124,NH=50,MARGIN=68,TOP=190;
  const width=Math.max(850,(Math.max(leaf,5)-1)*COL+NW+MARGIN*2);
  const height=TOP+maxDepth*ROW+NH+125;
  const offset=(width-((Math.max(leaf,1)-1)*COL+NW))/2;
