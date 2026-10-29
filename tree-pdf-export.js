@@ -49,4 +49,5 @@ function exportTree(){
  pop.document.open();pop.document.write(html);pop.document.close();
 }
 document.getElementById('downloadStyledPdf')?.addEventListener('click',exportTree);
+document.getElementById('downloadStyledPdfTop')?.addEventListener('click',exportTree);
 })();
