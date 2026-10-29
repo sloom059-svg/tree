@@ -17,3 +17,14 @@ body[data-view=receipt] .wrap{max-width:none;padding:0}body[data-view=receipt] #
 
 /* Multiple children in the add-relative dialog */
 #relativeNameRows{display:grid;gap:10px}#relativeNameRows .relative-extra-row{display:flex;align-items:center;gap:8px}#relativeNameRows .relative-extra-row input{flex:1;min-width:0}.relative-add-another{display:block;background:#f0f7f0;color:#187544;border:1px dashed #adcdb5;border-radius:9px;margin-top:12px;padding:10px 15px;font-weight:600;font-size:14px}.relative-add-another[hidden]{display:none}.relative-remove-name{background:#fff0f0;border:1px solid #edd6d6;border-radius:8px;color:#a33;width:37px;height:37px;flex-shrink:0}
+
+/* Compact family-tree card and branch layout */
+#treeView .tree-forest{gap:20px}
+#treeView .offspring{gap:5px;padding-top:40px}
+#treeView .offspring>.tree-unit{padding:0 4px}
+#treeView .person-card{width:142px;min-height:78px;border-top-width:3px}
+#treeView .person-name{font-size:15px;padding:9px 7px 5px}
+#treeView .person-name .card-user-icon{width:16px;height:16px}
+#treeView .card-actions{padding:0 5px 5px;gap:3px}
+#treeView .card-actions button{font-size:11px;padding:3px 5px}
+#treeView .person-menu summary{width:22px;height:23px;line-height:21px;font-size:19px}
