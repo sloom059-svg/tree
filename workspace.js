@@ -56,7 +56,7 @@
     lines.innerHTML=paths.join('');
   }
   function scheduleLayout(){cancelAnimationFrame(layoutFrame);layoutFrame=requestAnimationFrame(()=>{drawLines();if(!fitted)fit();});}
-  window.addEventListener('tree:layout',scheduleLayout);
+  window.addEventListener('tree:layout',()=>{fitted=false;scheduleLayout();});
   window.addEventListener('tree:navigate',e=>{
     closeSidebar();closeNotifications();
     document.querySelectorAll('.sidebar-nav [data-go]').forEach(b=>b.classList.toggle('active',b.dataset.go===e.detail&&!b.dataset.adminSection));
