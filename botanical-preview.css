@@ -1,0 +1,19 @@
+@font-face{font-family:FamilyNaskh;src:url('./assets/noto-naskh-arabic-bold.ttf') format('truetype');font-weight:700;font-display:swap}
+#familyDesignDialog{width:min(1180px,96vw);max-width:96vw;height:min(94dvh,1100px);max-height:94dvh;padding:0;border:1px solid #d8dfd7;border-radius:20px;overflow:hidden;color:#254b3c;background:#f7f7f3;box-shadow:0 28px 100px #102d3540}
+#familyDesignDialog[open]{display:flex;flex-direction:column}
+#familyDesignDialog::backdrop{background:#10251ec9;backdrop-filter:blur(3px)}
+.design-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 24px;background:#fff;border-bottom:1px solid #e2e6df}
+.design-header h2{font-size:22px;margin:0 0 3px}.design-header p{margin:0;font-size:13px;color:#64766c}
+.design-close{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:50%;background:#eff2ed;font-size:26px;color:#4c6154}
+.design-toolbar{display:flex;gap:8px;align-items:center;justify-content:center;padding:10px 16px;border-bottom:1px solid #dce1d7;background:#f7f7f3;flex-wrap:wrap}
+.design-toolbar button{background:white;color:#325541;border:1px solid #d5ded1;border-radius:9px;padding:7px 12px;min-width:38px;font-size:14px}
+.design-toolbar output{font-size:13px;min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+.design-toolbar .design-download{background:#1b6746;color:#fff;border-color:#1b6746;margin-inline-start:auto;font-weight:700;padding:9px 18px}
+.design-toolbar button:disabled{opacity:.55;cursor:wait}
+.design-viewport{flex:1;min-height:100px;position:relative;overflow:hidden;touch-action:none;direction:ltr;cursor:grab;background:#dfe4da;background-image:radial-gradient(#b3bdae 1px,transparent 1px);background-size:18px 18px;isolation:isolate}
+.design-viewport:active{cursor:grabbing}.design-sheet{position:absolute;top:0;left:0;transform-origin:0 0;box-shadow:0 7px 30px #223c3e24;background:#f8f4e7;will-change:transform}
+.design-sheet svg{display:block;max-width:none;max-height:none}.design-status{min-height:26px;margin:0;padding:8px 18px;color:#637566;font-size:13px;background:#fff;text-align:center}.design-status.error{color:#a23d29;background:#fff6f2}
+.design-busy{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:#f4f5eddc;color:#28563b;font-size:17px}.design-busy[hidden]{display:none}
+#familyDesignDialog button:focus-visible,#designViewport:focus-visible{outline:3px solid #b89b58;outline-offset:2px}
+@media(max-width:600px){#familyDesignDialog{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border:0;border-radius:0}.design-header{padding:14px 16px}.design-header h2{font-size:19px}.design-header p{font-size:12px}.design-toolbar{gap:5px;padding:9px}.design-toolbar button{padding:7px 9px}.design-toolbar .design-download{padding:8px 12px}.design-status{font-size:12px}}
+.design-ready-pdf{background:#f2f5ed;color:#176443;text-align:center;font-weight:700;font-size:14px;padding:9px;text-decoration:underline}.design-ready-pdf[hidden]{display:none}

@@ -1,10 +1,11 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة اختبار — بيانات وهمية</title><style>html,body{height:100%;margin:0}body{display:flex;flex-direction:column;font:12px system-ui,sans-serif}.test-banner{background:#fff4d8;color:#705b20;text-align:center;padding:7px}iframe{flex:1;width:100%;border:0}body.mobile{background:#eef0eb}body.mobile iframe{flex:none;width:390px;max-width:100%;height:820px;margin:0 auto}</style></head><body><div class="test-banner">معاينة اختبار فقط — بيانات وهمية. لا تتصل بقاعدة البيانات ولا تحفظ أي تغييرات حقيقية.</div><iframe id="preview" title="اختبار الواجهة ببيانات وهمية" sandbox="allow-scripts allow-forms allow-modals allow-downloads"></iframe><script>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة اختبار — بيانات وهمية</title><style>html,body{height:100%;margin:0}body{display:flex;flex-direction:column;font:12px system-ui,sans-serif}.test-banner{background:#fff4d8;color:#705b20;text-align:center;padding:7px}iframe{flex:1;width:100%;border:0}body.mobile{background:#eef0eb}body.mobile iframe{flex:none;width:390px;max-width:100%;height:820px;margin:0 auto}</style></head><body><div class="test-banner">معاينة اختبار فقط — بيانات وهمية. لا تتصل بقاعدة البيانات ولا تحفظ أي تغييرات حقيقية.</div><iframe id="preview" title="اختبار الواجهة ببيانات وهمية" sandbox="allow-scripts allow-forms allow-modals allow-downloads allow-same-origin"></iframe><script>
 (async()=>{
   const params=new URLSearchParams(location.search),mode=params.has('join')?'join':'admin';
   if(params.has('mobile'))document.body.classList.add('mobile');
   const html=await (await fetch('../index.html',{cache:'no-store'})).text();
   const bootstrap=(mode)=>{
     const data=mode==='join'?{tree_invite:'DEMO_ONLY_123456'}:{tree_session:JSON.stringify({access_token:'demo-not-a-real-session'})};
+    data.tree_supabase_ref='vzlovxpfmpyisrvqtsnd';
     Object.defineProperty(window,'sessionStorage',{value:{getItem:key=>data[key]??null,setItem:(key,value)=>{data[key]=String(value);},removeItem:key=>{delete data[key];}}});
     history.replaceState=()=>{};
     const demoPeople=[
@@ -21,7 +22,9 @@
     const demoRequests=[{id:'demo-request',sender_name:'مقدم طلب تجريبي للعائلة',phone:'00000000',selected_parent:'demo-4',context:'أبناء محمد بن صالح',details:'خالد\\nفهد',proposed_names:['خالد','فهد'],status:'pending',notification_read_at:null,created_at:'2026-10-28T02:15:00+03:00'}];
     const token='f'.repeat(64);
     function receipt(r){return{token,status:r.status,created_at:r.created_at,names:r.proposed_names,parent_name:demoPeople.find(p=>p.id===r.selected_parent)?.name||null};}
+    const realFetch=window.fetch.bind(window);
     window.fetch=async(url,options={})=>{
+      if(new URL(String(url),location.href).pathname.endsWith('/assets/noto-naskh-arabic-bold.ttf'))return realFetch(url,options);
       let result,status=200;const path=String(url),body=options.body?JSON.parse(options.body):{};
       if(path.includes('/rpc/family_short_invite'))result='DEMO_ONLY_123456';
       else if(path.includes('/rpc/my_family_invite'))result='DEMO_ONLY_123456';
